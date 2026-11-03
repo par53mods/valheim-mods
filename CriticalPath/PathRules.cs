@@ -292,13 +292,12 @@ namespace CriticalPath
             return ids;
         }
 
-        // Ready for the boss: only what was just unlocked or can be cooked right now,
-        // and no more gear.
+        // Ready for the boss: no more fight prep or gear, but the rest of the path
+        // still shows.
         public static List<Suggestion> WhenReady(IEnumerable<Suggestion> suggestions)
         {
             return suggestions
                 .Where(s => s.Tier != Tier.Armor && s.Tier != Tier.Gear && s.Tier != Tier.Boss)
-                .Where(s => s.Latest || (s.Tier == Tier.Food && s.Ready))
                 .ToList();
         }
 

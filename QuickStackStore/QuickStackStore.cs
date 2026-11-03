@@ -14,7 +14,7 @@ namespace QuickStackStore
     // stackable items from your inventory into nearby chests already holding them.
     // Each chest goes through the game's own Stack All
     // request, so a chest in use or owned by another player is treated the same way.
-    [BepInPlugin("com.parallel53.quickstackstore", "QuickStackStore", "1.0.0")]
+    [BepInPlugin("com.parallel53.quickstackstore", "QuickStackStore", "1.0.1")]
     public class QuickStackStorePlugin : BaseUnityPlugin
     {
         private const int HotbarRow = 0;
@@ -30,6 +30,8 @@ namespace QuickStackStore
 
         private static ConfigEntry<float> radius;
         private static ConfigEntry<bool> keepHotbar;
+
+        private const float DropFraction = 0.25f;
 
         private static Button button;
         private static bool answeringRequest;
@@ -68,12 +70,12 @@ namespace QuickStackStore
 
             button.GetComponentInChildren<TMP_Text>(true).text = "Quick Stack";
 
-            // Centred on the panel's bottom edge.
+            // Centred on the panel's bottom edge, a quarter of its height lower.
             RectTransform rect = (RectTransform)button.transform;
             rect.anchorMin = new Vector2(0.5f, 0f);
             rect.anchorMax = new Vector2(0.5f, 0f);
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = Vector2.zero;
+            rect.anchoredPosition = new Vector2(0f, -rect.rect.height * DropFraction);
         }
 
         // A chest panel opens below the inventory, over where the button sits.

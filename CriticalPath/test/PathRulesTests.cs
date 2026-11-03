@@ -199,7 +199,7 @@ public static class PathRulesTests
                 new ArmorOption { Id = "upgradeHelm", Slot = 0, Gain = 2f, Cost = 4 }
             }, 2f).ToArray()));
 
-        Check("ready leaves out gear and long jobs", "cauldron,soup", Ids(PathRules.WhenReady(new[]
+        Check("ready leaves out fight prep and gear", "cauldron,soup,stew,kiln", Ids(PathRules.WhenReady(new[]
         {
             new Suggestion { Id = "cauldron", Tier = Tier.Food, Latest = true },
             new Suggestion { Id = "sword", Tier = Tier.Gear, Latest = true },

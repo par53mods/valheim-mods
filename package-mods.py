@@ -78,7 +78,7 @@ MODS = [
     {
         "name": "QuickStackStore",
         "folder": "QuickStackStore",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "description": "Adds an inventory button that moves your stackable items into nearby chests already holding them.",
         "readme": "Click Quick Stack on the inventory screen to move stackable items into nearby chests that "
                   "already hold them. Equipped items, single items such as gear and, by default, "
@@ -109,7 +109,7 @@ MODS = [
     {
         "name": "CriticalPath",
         "folder": "CriticalPath",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Suggests the next step towards better tools, food and just enough armor for the next boss.",
         "readme": "Shows a panel on the inventory screen with the next step towards the most survivability "
                   "for the least time: tools that open up new materials, food you can cook, and only the "

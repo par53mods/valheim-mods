@@ -13,7 +13,7 @@ namespace CriticalPath
 {
     // Shows what to make next on the inventory screen, worked out from what this
     // character has discovered, so a character mid-game starts in the right place.
-    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.0")]
+    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.1")]
     public class CriticalPathPlugin : BaseUnityPlugin
     {
         private const string BuiltKey = "parallel53.criticalpath.built";
@@ -27,6 +27,8 @@ namespace CriticalPath
 
         // Dark wood brown, nearly opaque.
         private static readonly Color PanelBacking = new Color(0.12f, 0.09f, 0.07f, 0.96f);
+        private const string QuickStackButton = "QuickStackButton";
+        private const float ButtonGap = 6f;
         private const float RefreshSeconds = 2f;
         private const float ScanRadius = 40f;
 
@@ -37,6 +39,9 @@ namespace CriticalPath
 
         private static readonly AccessTools.FieldRef<Player, Dictionary<string, int>> KnownStations =
             AccessTools.FieldRefAccess<Player, Dictionary<string, int>>("m_knownStations");
+
+        private static readonly AccessTools.FieldRef<Minimap, List<Minimap.PinData>> Pins =
+            AccessTools.FieldRefAccess<Minimap, List<Minimap.PinData>>("m_pins");
 
         private static readonly AccessTools.FieldRef<Player, HashSet<string>> KnownMaterial =
             AccessTools.FieldRefAccess<Player, HashSet<string>>("m_knownMaterial");
@@ -60,29 +65,49 @@ namespace CriticalPath
         {
             new Boss("Eikthyr", 6f, "Offer 2 deer trophies at the altar. Parry his headbutts to stagger him.",
                 NoResistance, ShieldUse.Parry,
-                new Need("TrophyDeer", 2, "Hunt deer in the Meadows")),
+                new Need("TrophyDeer", 2, "Hunt deer in the Meadows"))
+            {
+                Find = "Read the Vegvisir stone in the Meadows to mark his altar."
+            },
             new Boss("gd_king", 18f, "Offer 3 ancient seeds. Kite him with the bow from behind pillars.",
                 NoResistance, ShieldUse.None,
-                new Need("AncientSeed", 3, "Destroy greydwarf nests in the Black Forest")) { Arrows = 100 },
+                new Need("AncientSeed", 3, "Destroy greydwarf nests in the Black Forest"))
+            {
+                Arrows = 100,
+                Find = "Read a Vegvisir in a Black Forest burial chamber to mark his altar."
+            },
             new Boss("Bonemass", 30f, "Offer 10 withered bones. Parry to stagger him and bring blunt weapons.",
                 HitData.DamageType.Poison, ShieldUse.Parry,
-                new Need("WitheredBone", 10, "Search Sunken Crypts in the Swamp")),
+                new Need("WitheredBone", 10, "Search Sunken Crypts in the Swamp"))
+            {
+                Find = "Read a Vegvisir in a Swamp Sunken Crypt to mark his altar."
+            },
             new Boss("Dragon", 44f, "Offer 3 dragon eggs. Dodge her breath behind boulders.",
                 HitData.DamageType.Frost, ShieldUse.None,
                 new Need("DragonEgg", 3, "Carry eggs one at a time from dragon nests in the Mountains"))
             {
                 Arrows = 200,
-                Ranged = true
+                Ranged = true,
+                Find = "Read a Vegvisir in the Mountains to mark her altar."
             },
             new Boss("GoblinKing", 60f, "Offer 5 fuling totems. Sprint behind his stone pillars.",
                 HitData.DamageType.Fire, ShieldUse.None,
-                new Need("GoblinTotem", 5, "Take totems from fuling villages in the Plains")),
+                new Need("GoblinTotem", 5, "Take totems from fuling villages in the Plains"))
+            {
+                Find = "Read a Vegvisir in a Plains fuling village to mark his altar."
+            },
             new Boss("SeekerQueen", 82f, "Open the sealed door with the Sealbreaker. Dodge rather than block.",
                 NoResistance, ShieldUse.None,
                 new Need("DvergrKey", 1, ""),
                 new Need("CapeFeather", 1, ""),
-                new Need("Demister", 1, "")),
+                new Need("Demister", 1, ""))
+            {
+                Find = "Read the Vegvisir in a Mistlands infested mine to mark her lair."
+            },
             new Boss("Fader", 94f, "Offer 3 bells.", HitData.DamageType.Fire, ShieldUse.Strongest)
+            {
+                Find = "Read a Vegvisir in an Ashlands fortress to mark its altar."
+            }
         };
 
         private const HitData.DamageType NoResistance = 0;
@@ -98,6 +123,8 @@ namespace CriticalPath
             // The strongest shield that can be made, as a safety net against heavy hits.
             Strongest
         }
+
+        private const string DefaultFind = "Read a Vegvisir to mark its altar on the map.";
 
         // Arrows to bring when a boss doesn't say otherwise.
         private const int DefaultArrows = 20;
@@ -195,6 +222,9 @@ namespace CriticalPath
             // Fought at range whatever its weaknesses, such as a boss that flies.
             public bool Ranged;
 
+            // Where to find the Vegvisir that marks the altar on the map.
+            public string Find = DefaultFind;
+
             public Boss(string prefab, float targetArmor, string hint, HitData.DamageType resist, ShieldUse shield,
                 params Need[] bring)
             {
@@ -264,6 +294,10 @@ namespace CriticalPath
 
             // A bow and enough arrows are on hand for a ranged fight, or none can be made.
             public bool Shooting = true;
+
+            // Its altar is pinned on the map. Finding it comes last, once the rest is ready.
+            public bool Located;
+            public string Find;
 
             public bool Ready
             {
@@ -431,6 +465,13 @@ namespace CriticalPath
                 bottom = Mathf.Min(bottom, LocalRect(canvas, gui.m_container).yMin);
             }
 
+            // Below QuickStackStore's button, which hangs off the inventory's bottom edge.
+            RectTransform button = (RectTransform)gui.m_player.Find(QuickStackButton);
+            if (button != null && button.gameObject.activeInHierarchy)
+            {
+                bottom = Mathf.Min(bottom, LocalRect(canvas, button).yMin + Gap - ButtonGap);
+            }
+
             float width = inventory.width;
             float height = panelLabel.GetPreferredValues(panelText, width - 2f * Padding, 0f).y + 2f * Padding;
             panel.sizeDelta = new Vector2(width, height);
@@ -455,6 +496,11 @@ namespace CriticalPath
             Dictionary<string, int> stock = Stock(player, nearby);
             BossGoal goal = NextBoss(player, stock);
             List<Suggestion> suggestions = PathRules.Choose(Candidates(player, stock, goal), suggestionCount.Value);
+            if (goal != null && goal.Ready && !goal.Located)
+            {
+                suggestions.Insert(0, new Suggestion { Id = "find:" + goal.Name, Name = "Find " + goal.Name, Reason = goal.Find, Detail = "" });
+                suggestions = suggestions.Take(suggestionCount.Value).ToList();
+            }
             panelText = PanelText(suggestions, goal);
 
             string top = suggestions.Count > 0 ? suggestions[0].Id : "";
@@ -480,7 +526,8 @@ namespace CriticalPath
                 : "";
             if (goal != null && goal.Ready)
             {
-                text.Append("\n<color=#ffcc66>Ready for ").Append(goal.Name).Append(". Go fight it.</color>").Append(armor);
+                text.Append("\n<color=#ffcc66>Ready for ").Append(goal.Name)
+                    .Append(goal.Located ? ". Go fight it.</color>" : ". Find it next.</color>").Append(armor);
                 text.Append("\n").Append(goal.Hint);
             }
             else if (goal != null)
@@ -568,7 +615,9 @@ namespace CriticalPath
                         Weak = DamageKinds.Where(type => IsWeakness(character.m_damageModifiers.GetModifier(type))).ToList(),
                         Have = boss.Resist == NoResistance ? 0 : Strongest(player, stock, boss.Resist),
                         Armor = player.GetBodyArmor(),
-                        TargetArmor = boss.TargetArmor
+                        TargetArmor = boss.TargetArmor,
+                        Located = Located(character.m_name),
+                        Find = boss.Find
                     };
                 }
             }
@@ -667,6 +716,25 @@ namespace CriticalPath
         }
 
         // Read from the boss itself so the defeat key always matches the game.
+        // A Vegvisir drops a boss pin named after the boss on the map.
+        private static bool Located(string name)
+        {
+            if (Minimap.instance == null)
+            {
+                return true;
+            }
+
+            List<Minimap.PinData> bossPins = Pins(Minimap.instance).Where(pin => pin.m_type == Minimap.PinType.Boss).ToList();
+            foreach (Minimap.PinData pin in bossPins.Where(pin => MissingItems.Add("pin:" + pin.m_name)))
+            {
+                log.LogInfo("Boss pin on the map: " + pin.m_name);
+            }
+
+            string localized = Localized(name);
+            return bossPins.Any(pin => pin.m_name == name ||
+                string.Equals(Localized(pin.m_name), localized, System.StringComparison.OrdinalIgnoreCase));
+        }
+
         private static bool Defeated(string prefab)
         {
             GameObject boss = ZNetScene.instance.GetPrefab(prefab);
