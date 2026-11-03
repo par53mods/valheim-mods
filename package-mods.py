@@ -8,6 +8,7 @@ from pathlib import Path
 
 AUTHOR = "parallel53"
 BEPINEX_PACK = "denikson-BepInExPack_Valheim-5.4.2360"
+REPO = "https://github.com/par53mods/valheim-mods"
 ROOT = Path(__file__).resolve().parent
 OUTPUT = Path.home() / "Downloads"
 ICON_SIZE = 256
@@ -219,7 +220,7 @@ def package(mod):
     manifest = {
         "name": mod["name"],
         "version_number": mod["version"],
-        "website_url": "",
+        "website_url": REPO + "/tree/main/" + mod["folder"],
         "description": mod["description"],
         "dependencies": [BEPINEX_PACK],
     }
