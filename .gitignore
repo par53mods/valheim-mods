@@ -1,0 +1,15 @@
+# Only the mods and their packaging are public. Backups, saves, the config
+# app and the launcher stay local.
+/*
+!/.gitignore
+!/README.md
+!/LICENSE
+!/package-mods.py
+!/BrightBlueDeer/
+!/ChestSalvage/
+!/CriticalPath/
+!/Ljosgjord/
+!/MenuModList/
+!/QuickStackStore/
+bin/
+.DS_Store
