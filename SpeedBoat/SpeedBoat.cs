@@ -28,6 +28,7 @@ namespace SpeedBoat
 
         private static TMP_Text sailLabel;
         private static TMP_Text reverseLabel;
+        private static readonly Vector3[] Corners = new Vector3[4];
 
         private struct Forces
         {
@@ -138,37 +139,57 @@ namespace SpeedBoat
 
             if (sailLabel == null)
             {
-                sailLabel = CreateLabel(__instance, __instance.m_fullSail);
-                reverseLabel = CreateLabel(__instance, __instance.m_rudderBackward);
+                sailLabel = CreateLabel(__instance);
+                reverseLabel = CreateLabel(__instance);
             }
 
-            SetLabel(sailLabel, extra > 0 ? SpeedSteps.Label(extra) : "");
-            SetLabel(reverseLabel, extra < 0 ? SpeedSteps.Label(extra) : "");
+            // Full sail shows as the three forward arrows.
+            SetLabel(sailLabel, __instance.m_rudderFastForward, extra > 0 ? SpeedSteps.Label(extra) : "");
+            SetLabel(reverseLabel, __instance.m_rudderBackward, extra < 0 ? SpeedSteps.Label(extra) : "");
         }
 
-        private static void SetLabel(TMP_Text label, string text)
+        // Placed on screen beside the arrow rather than inside it, since the reverse
+        // arrow is the forward one turned upside down and would turn the text too.
+        private static void SetLabel(TMP_Text label, GameObject icon, string text)
         {
-            if (label != null && label.text != text)
+            if (label == null || icon == null)
+            {
+                return;
+            }
+
+            bool show = text.Length > 0 && icon.activeInHierarchy;
+            if (label.gameObject.activeSelf != show)
+            {
+                label.gameObject.SetActive(show);
+            }
+
+            if (!show)
+            {
+                return;
+            }
+
+            if (label.text != text)
             {
                 label.text = text;
             }
+
+            ((RectTransform)icon.transform).GetWorldCorners(Corners);
+            float right = Mathf.Max(Mathf.Max(Corners[0].x, Corners[1].x), Mathf.Max(Corners[2].x, Corners[3].x));
+            float middle = (Corners[0].y + Corners[1].y + Corners[2].y + Corners[3].y) / 4f;
+            RectTransform rect = label.rectTransform;
+            rect.position = new Vector3(right, middle, rect.position.z);
+            rect.anchoredPosition += LabelOffset;
         }
 
-        // Hangs off the right edge of the icon, so it shows and hides with it.
-        private static TMP_Text CreateLabel(Hud hud, GameObject icon)
+        private static TMP_Text CreateLabel(Hud hud)
         {
-            if (icon == null)
-            {
-                return null;
-            }
-
             GameObject labelObject = new GameObject("SpeedBoatLabel", typeof(RectTransform));
             labelObject.SetActive(false);
             RectTransform rect = (RectTransform)labelObject.transform;
-            rect.SetParent(icon.transform, false);
-            rect.anchorMin = rect.anchorMax = new Vector2(1f, 0.5f);
+            rect.SetParent(hud.m_shipHudRoot.transform, false);
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0f, 0.5f);
-            rect.anchoredPosition = LabelOffset;
+            rect.rotation = Quaternion.identity;
             rect.sizeDelta = new Vector2(60f, 30f);
 
             // The font has to be set before the text wakes, or it falls back to a default.
@@ -185,7 +206,6 @@ namespace SpeedBoat
             label.alignment = TextAlignmentOptions.Left;
             label.raycastTarget = false;
             label.text = "";
-            labelObject.SetActive(true);
             return label;
         }
     }
