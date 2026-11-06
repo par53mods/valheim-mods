@@ -220,7 +220,8 @@ MODS = [
                   "big they are and how long they last, and makes them brighter and spread wider around the item. Only your "
                   "game changes; other players see the usual sparkles.\n\n"
                   "Settings are in `com.parallel53.dudewheresmyspear.cfg`: `Count` (3), `Size` (3), `Lifetime` (3), "
-                  "`Intensity` (2) and `Spread` (2), each a multiple of the game's. Restart the game after changing them.",
+                  "`Intensity` (2) and `Spread` (2), each a multiple of the game's. Changes take effect as soon as "
+                  "you save the file, even mid-game, including on items already on the ground.",
         "background": (60, 40, 10),
         "ink": (255, 220, 90),
         "icon": [

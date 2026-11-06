@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
@@ -10,7 +12,8 @@ namespace DudeWheresMySpear
 {
     // Makes the sparkles on items lying on the ground brighter, more numerous and
     // more spread out. They are a particle effect inside each item's prefab, so
-    // changing the prefabs once changes every item dropped afterwards.
+    // changing the prefabs changes every item dropped afterwards. Each change is
+    // worked out from the game's own values, so settings can change while playing.
     [BepInPlugin("com.parallel53.dudewheresmyspear", "DudeWheresMySpear", "0.1.0")]
     public class DudeWheresMySpearPlugin : BaseUnityPlugin
     {
@@ -25,8 +28,30 @@ namespace DudeWheresMySpear
         // Share of items an effect must be on to count as the sparkle when its name doesn't match.
         private const float SharedShare = 0.2f;
 
-        private static readonly HashSet<ParticleSystem> Boosted = new HashSet<ParticleSystem>();
+        // How often to look for a saved settings file.
+        private const float CheckSeconds = 1f;
+
+        // The game's own sparkle values, by item prefab name, and the prefab sparkles they belong to.
+        private static readonly Dictionary<string, Original> Originals = new Dictionary<string, Original>();
+        private static readonly Dictionary<ParticleSystem, string> PrefabSparkles = new Dictionary<ParticleSystem, string>();
         private static bool logged;
+        private static bool changed;
+
+        private DateTime configWritten;
+        private float nextCheck;
+
+        private class Original
+        {
+            public int MaxParticles;
+            public float Lifetime;
+            public float Size;
+            public ParticleSystem.MinMaxGradient Color;
+            public float Rate;
+            public float RateOverDistance;
+            public ParticleSystem.Burst[] Bursts;
+            public float Radius;
+            public Vector3 Scale;
+        }
 
         private static ManualLogSource log;
         private static ConfigEntry<float> intensity;
@@ -43,15 +68,72 @@ namespace DudeWheresMySpear
             spread = Multiplier("Spread", 2f, "How far around the item the sparkles appear.");
             size = Multiplier("Size", 3f, "How big each sparkle is.");
             lifetime = Multiplier("Lifetime", 3f, "How long each sparkle lasts.");
+            configWritten = WrittenAt();
 
             new Harmony("com.parallel53.dudewheresmyspear").PatchAll(typeof(DudeWheresMySpearPlugin));
         }
 
         private ConfigEntry<float> Multiplier(string key, float value, string description)
         {
-            return Config.Bind("Sparkles", key, value,
-                new ConfigDescription(description + " A multiple of the game's. Takes effect the next time the game starts.",
+            ConfigEntry<float> entry = Config.Bind("Sparkles", key, value,
+                new ConfigDescription(description + " A multiple of the game's. Takes effect as soon as the file is saved.",
                     new AcceptableValueRange<float>(0.1f, 10f)));
+            entry.SettingChanged += (sender, args) => changed = true;
+            return entry;
+        }
+
+        private DateTime WrittenAt()
+        {
+            return File.Exists(Config.ConfigFilePath) ? File.GetLastWriteTimeUtc(Config.ConfigFilePath) : DateTime.MinValue;
+        }
+
+        // BepInEx reads the file only at startup, so a save from a config editor is picked up here.
+        private void Update()
+        {
+            if (Time.unscaledTime >= nextCheck)
+            {
+                nextCheck = Time.unscaledTime + CheckSeconds;
+                DateTime written = WrittenAt();
+                if (written != configWritten)
+                {
+                    configWritten = written;
+                    Config.Reload();
+                }
+            }
+
+            if (changed)
+            {
+                changed = false;
+                ApplyAll();
+            }
+        }
+
+        // The prefabs, then every item already lying in the world.
+        private static void ApplyAll()
+        {
+            foreach (KeyValuePair<ParticleSystem, string> sparkle in PrefabSparkles.Where(pair => pair.Key != null))
+            {
+                Apply(sparkle.Key, Originals[sparkle.Value]);
+            }
+
+            int dropped = 0;
+            foreach (ItemDrop drop in UnityEngine.Object.FindObjectsByType<ItemDrop>(FindObjectsSortMode.None))
+            {
+                if (!Originals.TryGetValue(Utils.GetPrefabName(drop.gameObject), out Original original))
+                {
+                    continue;
+                }
+
+                foreach (ParticleSystem particles in drop.GetComponentsInChildren<ParticleSystem>(true)
+                    .Where(particles => !Equipped(drop.gameObject, particles) && Key(particles).StartsWith(SparkleMaterial)))
+                {
+                    Apply(particles, original);
+                    dropped++;
+                }
+            }
+
+            log.LogInfo("Settings changed: count " + count.Value + ", size " + size.Value + ", lifetime " + lifetime.Value +
+                ", intensity " + intensity.Value + ", spread " + spread.Value + ". Updated " + dropped + " items on the ground.");
         }
 
         [HarmonyPostfix]
@@ -117,20 +199,35 @@ namespace DudeWheresMySpear
             }
 
             int boosted = 0;
-            foreach (ParticleSystem particles in sparkles.SelectMany(key => effects[key]))
+            foreach (string key in sparkles)
             {
-                if (Boosted.Add(particles))
+                foreach (GameObject item in owners[key])
                 {
-                    if (Boosted.Count == 1)
+                    foreach (ParticleSystem particles in effects[key].Where(particles => particles.transform.IsChildOf(item.transform)))
                     {
-                        log.LogInfo("Game's sparkles: " + Describe(particles));
-                    }
+                        if (PrefabSparkles.ContainsKey(particles))
+                        {
+                            continue;
+                        }
 
-                    Boost(particles);
-                    boosted++;
-                    if (Boosted.Count == 1)
-                    {
-                        log.LogInfo("Boosted to: " + Describe(particles));
+                        // The first look at each prefab is the game's own values.
+                        if (!Originals.ContainsKey(item.name))
+                        {
+                            Originals[item.name] = Capture(particles);
+                        }
+
+                        PrefabSparkles[particles] = item.name;
+                        if (PrefabSparkles.Count == 1)
+                        {
+                            log.LogInfo("Game's sparkles: " + Describe(particles));
+                        }
+
+                        Apply(particles, Originals[item.name]);
+                        boosted++;
+                        if (PrefabSparkles.Count == 1)
+                        {
+                            log.LogInfo("Boosted to: " + Describe(particles));
+                        }
                     }
                 }
             }
@@ -162,22 +259,42 @@ namespace DudeWheresMySpear
             return false;
         }
 
-        private static void Boost(ParticleSystem particles)
+        private static Original Capture(ParticleSystem particles)
+        {
+            ParticleSystem.MainModule main = particles.main;
+            ParticleSystem.EmissionModule emission = particles.emission;
+            ParticleSystem.Burst[] bursts = new ParticleSystem.Burst[emission.burstCount];
+            emission.GetBursts(bursts);
+            return new Original
+            {
+                MaxParticles = main.maxParticles,
+                Lifetime = main.startLifetimeMultiplier,
+                Size = main.startSizeMultiplier,
+                Color = main.startColor,
+                Rate = emission.rateOverTimeMultiplier,
+                RateOverDistance = emission.rateOverDistanceMultiplier,
+                Bursts = bursts,
+                Radius = particles.shape.radius,
+                Scale = particles.shape.scale
+            };
+        }
+
+        // Always from the game's values, so changing a setting twice doesn't compound.
+        private static void Apply(ParticleSystem particles, Original original)
         {
             ParticleSystem.MainModule main = particles.main;
             // Room for the extra sparkles, which also linger longer.
-            main.maxParticles = Mathf.CeilToInt(main.maxParticles * count.Value * Mathf.Max(lifetime.Value, 1f));
-            main.startLifetimeMultiplier *= lifetime.Value;
-            main.startSizeMultiplier *= size.Value;
-            main.startColor = Brighter(main.startColor, intensity.Value);
+            main.maxParticles = Mathf.CeilToInt(original.MaxParticles * count.Value * Mathf.Max(lifetime.Value, 1f));
+            main.startLifetimeMultiplier = original.Lifetime * lifetime.Value;
+            main.startSizeMultiplier = original.Size * size.Value;
+            main.startColor = Brighter(original.Color, intensity.Value);
 
             ParticleSystem.EmissionModule emission = particles.emission;
-            emission.rateOverTimeMultiplier *= count.Value;
-            emission.rateOverDistanceMultiplier *= count.Value;
+            emission.rateOverTimeMultiplier = original.Rate * count.Value;
+            emission.rateOverDistanceMultiplier = original.RateOverDistance * count.Value;
 
             // Some effects release particles in timed bursts instead of a steady stream.
-            ParticleSystem.Burst[] bursts = new ParticleSystem.Burst[emission.burstCount];
-            emission.GetBursts(bursts);
+            ParticleSystem.Burst[] bursts = (ParticleSystem.Burst[])original.Bursts.Clone();
             for (int i = 0; i < bursts.Length; i++)
             {
                 ParticleSystem.MinMaxCurve burstCount = bursts[i].count;
@@ -191,8 +308,8 @@ namespace DudeWheresMySpear
             emission.SetBursts(bursts);
 
             ParticleSystem.ShapeModule shape = particles.shape;
-            shape.radius *= spread.Value;
-            shape.scale *= spread.Value;
+            shape.radius = original.Radius * spread.Value;
+            shape.scale = original.Scale * spread.Value;
         }
 
         private static string Describe(ParticleSystem particles)

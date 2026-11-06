@@ -20,6 +20,7 @@ csc -nologo -noconfig -nostdlib+ -target:library -optimize+ -out:bin/DudeWheresM
     -r:"$MANAGED/UnityEngine.CoreModule.dll" \
     -r:"$MANAGED/UnityEngine.ParticleSystemModule.dll" \
     -r:"$MANAGED/assembly_valheim.dll" \
+    -r:"$MANAGED/assembly_utils.dll" \
     -r:"$CORE/BepInEx.dll" \
     -r:"$CORE/0Harmony.dll" \
     DudeWheresMySpear.cs
