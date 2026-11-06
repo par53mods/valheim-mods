@@ -72,8 +72,8 @@ MODS = [
     {
         "name": "QuickStackStore",
         "folder": "QuickStackStore",
-        "version": "1.0.2",
-        "description": "One button sends your stackables into nearby chests that already hold them, and tells you exactly what didn't fit. Hotbar and equipped gear stay put.",
+        "version": "1.0.3",
+        "description": "One button sends your stackables into nearby chests that already hold them, and names anything that didn't fit. Equipped gear stays put, and so does your hotbar by default.",
         "readme": "Click **Quick Stack** on the inventory screen to move stackable items into nearby chests that already hold them. Equipped items, single items such as gear and, by default, your hotbar stay with you. When a chest is full it tells you which items had no room.\n\nSettings are in `com.parallel53.quickstackstore.cfg`: `Radius` and `KeepHotbar`.",
         "background": (70, 40, 110),
         "ink": (215, 180, 255),
@@ -99,9 +99,9 @@ MODS = [
     {
         "name": "CriticalPath",
         "folder": "CriticalPath",
-        "version": "0.1.2",
-        "description": "A pocket strategist for the inventory screen: the next tool, food, armor, mead, weapon or offering you need for the next boss, and nothing you don't. Then it points you at the boss.",
-        "readme": "Shows a panel under the inventory with the next steps towards the most survivability for the least time:\n\n- Tools that open up new materials, such as the bronze axe for fine wood.\n- The best new food you can make, labelled health, stamina or eitr.\n- For the next boss: just enough armor, the resistance it calls for (mead or gear), weapons or arrows that hit its weaknesses, a shield where it helps, and the summoning offering once your armor is up to it.\n- Finding the boss's altar comes last, once everything else is ready.\n\nStations, upgrades and materials appear only as steps towards a goal. It reads your character's progress, so it works mid-game.\n\nSettings are in `com.parallel53.criticalpath.cfg`: `Suggestions` and `Notify`.",
+        "version": "0.1.3",
+        "description": "A pocket strategist for the inventory screen: the next tool, food, armor, mead, weapon or offering you need for the next boss, and nothing you don't. Finding the boss is still up to you.",
+        "readme": "Shows a panel under the inventory with the next steps towards the most survivability for the least time:\n\n- Tools that open up new materials, such as the bronze axe for fine wood.\n- The best new food you can make, labelled health, stamina or eitr.\n- For the next boss: just enough armor, the resistance it calls for (mead or gear), weapons or arrows that hit its weaknesses, a shield where it helps, and the summoning offering once your armor is up to it.\n- Once you're ready, it reminds you to find the boss's altar and says which kind of Vegvisir to look for. It never marks the altar or reveals where it is.\n\nStations, upgrades and materials appear only as steps towards a goal. It reads your character's progress, so it works mid-game.\n\nSettings are in `com.parallel53.criticalpath.cfg`: `Suggestions` and `Notify`.",
         "background": (96, 30, 30),
         "ink": (255, 190, 90),
         "icon": [
@@ -215,7 +215,7 @@ MODS = [
         "name": "DudeWheresMySpear",
         "folder": "DudeWheresMySpear",
         "version": "0.1.0",
-        "description": "Dropped your spear in the tall grass again? Makes the sparkles on dropped items brighter, more plentiful and wider spread, so loot catches your eye from further away.",
+        "description": "Dropped your spear in the tall grass again? Makes the sparkles on dropped items brighter, more plentiful and wider spread, so loot is easier to spot.",
         "readme": "Items lying on the ground give off a few faint sparkles. This triples how many there are, how "
                   "big they are and how long they last, and makes them brighter and spread wider around the item. Only your "
                   "game changes; other players see the usual sparkles.\n\n"

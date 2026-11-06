@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using HarmonyLib;
 using TMPro;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace QuickStackStore
     // stackable items from your inventory into nearby chests already holding them.
     // Each chest goes through the game's own Stack All
     // request, so a chest in use or owned by another player is treated the same way.
-    [BepInPlugin("com.parallel53.quickstackstore", "QuickStackStore", "1.0.2")]
+    [BepInPlugin("com.parallel53.quickstackstore", "QuickStackStore", "1.0.3")]
     public class QuickStackStorePlugin : BaseUnityPlugin
     {
         private const int HotbarRow = 0;
@@ -37,20 +38,21 @@ namespace QuickStackStore
         private const float AnswerSeconds = 3f;
 
         // Names in the report before the rest are counted instead.
-        private const int NamesShown = 4;
+        private const int NamesShown = 3;
 
         // What the last press is waiting on: each item name with a matching chest,
         // and how many of it the player had before stacking.
         private static readonly Dictionary<string, int> Before = new Dictionary<string, int>();
-        private static int stacked;
         private static float reportBy;
         private static bool reporting;
 
+        private static ManualLogSource log;
         private static Button button;
         private static bool answeringRequest;
 
         private void Awake()
         {
+            log = Logger;
             radius = Config.Bind("General", "Radius", 10f,
                 new ConfigDescription("How far away a chest can be, in metres.",
                     new AcceptableValueRange<float>(1f, 50f)));
@@ -136,7 +138,7 @@ namespace QuickStackStore
 
             if (chests.Count == 0)
             {
-                player.Message(MessageHud.MessageType.Center, "No nearby chest holds anything you're carrying");
+                player.Message(MessageHud.MessageType.Center, Small("No nearby chest holds anything you're carrying"));
                 return;
             }
 
@@ -148,7 +150,6 @@ namespace QuickStackStore
                 Before[name] = Carried(player, name);
             }
 
-            stacked = 0;
             reporting = true;
             reportBy = Time.unscaledTime + AnswerSeconds;
             Requested.Clear();
@@ -176,23 +177,59 @@ namespace QuickStackStore
                 return;
             }
 
-            List<string> full = Before.Keys
-                .Where(name => Carried(player, name) > 0)
-                .Select(name => Localization.instance.Localize(name).ToLowerInvariant())
-                .OrderBy(name => name, StringComparer.Ordinal)
-                .ToList();
-            string names = string.Join(", ", full.Take(NamesShown).ToArray()) +
-                (full.Count > NamesShown ? " and " + (full.Count - NamesShown) + " more" : "");
-
-            if (stacked == 0)
+            // What left the bags, worked out from what was carried before.
+            List<string> moved = new List<string>();
+            List<string> full = new List<string>();
+            foreach (KeyValuePair<string, int> before in Before.OrderBy(pair => Shown(pair.Key), StringComparer.Ordinal))
             {
-                player.Message(MessageHud.MessageType.Center,
-                    full.Count > 0 ? "No room to stack " + names : "Nothing to stack");
-                return;
+                int left = Carried(player, before.Key);
+                if (left < before.Value)
+                {
+                    moved.Add((before.Value - left) + " " + Shown(before.Key));
+                }
+
+                if (left > 0)
+                {
+                    full.Add(Shown(before.Key));
+                }
             }
 
-            player.Message(MessageHud.MessageType.TopLeft, "Quick stacked " + stacked + " items" +
-                (full.Count > 0 ? ". No room for " + names : ""));
+            List<string> lines = new List<string>();
+            if (moved.Count > 0)
+            {
+                lines.Add("Stacked " + List(moved));
+            }
+
+            if (full.Count > 0)
+            {
+                lines.Add("No room to stack " + List(full));
+            }
+
+            if (lines.Count == 0)
+            {
+                lines.Add("Nothing to stack");
+            }
+
+            string message = string.Join("\n", lines.ToArray());
+            log.LogInfo(message.Replace("\n", ". "));
+            player.Message(MessageHud.MessageType.Center, Small(message));
+        }
+
+        private static string Shown(string name)
+        {
+            return Localization.instance.Localize(name).ToLowerInvariant();
+        }
+
+        private static string List(List<string> names)
+        {
+            return string.Join(", ", names.Take(NamesShown).ToArray()) +
+                (names.Count > NamesShown ? " and " + (names.Count - NamesShown) + " more" : "");
+        }
+
+        // The game's centre message is large; this one is half its size.
+        private static string Small(string message)
+        {
+            return "<size=50%>" + message + "</size>";
         }
 
         private static bool IsAvailable(Container chest, Player player)
@@ -240,22 +277,11 @@ namespace QuickStackStore
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Inventory), "StackAll")]
-        private static void SilenceChestMessage(ref bool __state, ref bool message)
+        private static void SilenceChestMessage(ref bool message)
         {
-            __state = answeringRequest;
             if (answeringRequest)
             {
                 message = false;
-            }
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(Inventory), "StackAll")]
-        private static void CountStacked(bool __state, int __result)
-        {
-            if (__state)
-            {
-                stacked += __result;
             }
         }
     }
