@@ -45,9 +45,9 @@ MODS = [
     {
         "name": "BrightBlueDeer",
         "folder": "BrightBlueDeer",
-        "version": "1.0.1",
-        "description": "Odin's paint bucket: deer turn electric blue, crows gold, boars pink, bears bright green and wolves turquoise. Only you see the makeover; every colour is yours to pick.",
-        "readme": "Paints deer (alive or dead, plus deer hides and the deer rug), crows, boars, bears and wolves, young and corpses included. Only your game changes; other players see them as usual.\n\nSettings are in `com.parallel53.brightbluedeer.cfg`: `Enabled`, `Color` for deer, `BirdColor` for crows, `BoarColor`, `BearColor` and `WolfColor`, each as red, green, blue from 0 to 255. Restart the game after changing them.",
+        "version": "1.0.2",
+        "description": "Odin's paint bucket: deer turn electric blue, crows gold, boars pink, bears bright green, wolves turquoise and necks violet. Only you see the makeover; every colour is yours to pick.",
+        "readme": "Paints deer (alive or dead, plus deer hides and the deer rug), crows, boars, bears, wolves and necks, young and corpses included, along with leather scraps, wolf pelts, bear hides, neck tails and the wolf and bear rugs. Only your game changes; other players see them as usual.\n\nSettings are in `com.parallel53.brightbluedeer.cfg`: `Enabled`, `Color` for deer, `BirdColor` for crows, `BoarColor`, `BearColor`, `WolfColor` and `NeckColor`, each as red, green, blue from 0 to 255. Restart the game after changing them.",
         "background": (12, 60, 140),
         "ink": (110, 190, 255),
         "icon": [
