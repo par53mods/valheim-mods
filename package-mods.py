@@ -177,6 +177,40 @@ MODS = [
             "................",
         ],
     },
+    {
+        "name": "SpeedBoat",
+        "folder": "SpeedBoat",
+        "version": "0.1.0",
+        "description": "Full sail not full enough? Two extra sail speeds above Full, a fast reverse for docking in a hurry, and rowing speed you can tune. A label by the speed indicator shows the level.",
+        "readme": "Press forward at Full sail for **+1** (twice the sail force) and again for **+2** (three times). "
+                  "Press back at reverse for **fast** reverse (twice the rowing force). A label beside the ship's "
+                  "speed indicator shows which level you're at, and stopping clears it. The extra speeds still "
+                  "depend on the wind like normal sailing.\n\n"
+                  "Rowing forward and in reverse stay at the game's speed unless you change them.\n\n"
+                  "Settings are in `com.parallel53.speedboat.cfg`: `FullPlusOne`, `FullPlusTwo`, `FastReverse`, "
+                  "`RowForward` and `RowBackward`, each a multiple of the game's force. "
+                  "The person at the helm needs the mod; other players don't.",
+        "background": (10, 50, 80),
+        "ink": (120, 220, 255),
+        "icon": [
+            "................",
+            ".......#........",
+            ".......##.......",
+            ".......###......",
+            ".......####.....",
+            ".......#####....",
+            ".......######...",
+            ".......#........",
+            "..############..",
+            "...##########...",
+            "....########....",
+            "................",
+            ".##..##..##..##.",
+            "#..##..##..##..#",
+            "................",
+            "................",
+        ],
+    },
 ]
 
 

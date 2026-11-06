@@ -10,6 +10,7 @@ BepInEx mods for Valheim, published on Thunderstore under `parallel53`.
 | [CriticalPath](CriticalPath) | A pocket strategist for the inventory screen: the next tool, food, armor, mead, weapon or offering you need for the next boss, and nothing you don't. Then it points you at the boss. |
 | [Ljosgjord](Ljosgjord) | Why carry a torch when your belt can glow? Wearing Megingjord gives you the Dverger Circlet's light, so your head is free for a proper helmet. |
 | [MenuModList](MenuModList) | Shows every loaded mod and the BepInEx version on the main menu, so you know what's running before you sail off. |
+| [SpeedBoat](SpeedBoat) | Full sail not full enough? Two extra sail speeds above Full, a fast reverse for docking in a hurry, and rowing speed you can tune. A label by the speed indicator shows the level. |
 
 ## Building
 
