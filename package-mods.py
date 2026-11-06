@@ -18,12 +18,9 @@ MODS = [
     {
         "name": "ChestSalvage",
         "folder": "ChestSalvage",
-        "version": "1.0.0",
-        "description": "Adds a Salvage button to chests that breaks the gear inside back into materials.",
-        "readme": "Adds a Salvage button to the chest panel. It shows how many items qualify, "
-                  "lists what you get back and asks before anything is destroyed.\n\n"
-                  "Settings are in `com.parallel53.chestsalvage.cfg`: `BaseReturnRate`, "
-                  "`UpgradeReturnRate` and `RequireStation`.",
+        "version": "1.0.1",
+        "description": "Regret that pile of old troll leather? A Salvage button on chests breaks the gear inside back into materials, shows the haul first and asks before anything is destroyed.",
+        "readme": "Adds a **Salvage** button to the chest panel. It counts the gear that qualifies, lists the materials you'd get back and asks before anything is broken down. Half the crafting cost and all of the upgrade costs come back by default, rounded up, and only near the station the item was made at.\n\nSettings are in `com.parallel53.chestsalvage.cfg`: `BaseReturnRate`, `UpgradeReturnRate` and `RequireStation`.",
         "background": (120, 72, 28),
         "ink": (250, 205, 110),
         "icon": [
@@ -49,12 +46,8 @@ MODS = [
         "name": "BrightBlueDeer",
         "folder": "BrightBlueDeer",
         "version": "1.0.1",
-        "description": "Recolours deer blue, crows gold, boars pink, bears green and wolves turquoise, in colours you choose.",
-        "readme": "Paints deer, their corpses, deer hides, the deer rug and crows, plus boars, bears and wolves "
-                  "(young and corpses too). Only your own game changes; other players see them as normal.\n\n"
-                  "Settings are in `com.parallel53.brightbluedeer.cfg`: `Enabled`, `Color` for deer, "
-                  "`BirdColor` for crows, `BoarColor`, `BearColor` and `WolfColor` (red, green, blue, each "
-                  "from 0 to 255). Restart the game after changing them.",
+        "description": "Odin's paint bucket: deer turn electric blue, crows gold, boars pink, bears bright green and wolves turquoise. Only you see the makeover; every colour is yours to pick.",
+        "readme": "Paints deer (alive or dead, plus deer hides and the deer rug), crows, boars, bears and wolves, young and corpses included. Only your game changes; other players see them as usual.\n\nSettings are in `com.parallel53.brightbluedeer.cfg`: `Enabled`, `Color` for deer, `BirdColor` for crows, `BoarColor`, `BearColor` and `WolfColor`, each as red, green, blue from 0 to 255. Restart the game after changing them.",
         "background": (12, 60, 140),
         "ink": (110, 190, 255),
         "icon": [
@@ -79,13 +72,9 @@ MODS = [
     {
         "name": "QuickStackStore",
         "folder": "QuickStackStore",
-        "version": "1.0.1",
-        "description": "Adds an inventory button that moves your stackable items into nearby chests already holding them.",
-        "readme": "Click Quick Stack on the inventory screen to move stackable items into nearby chests that "
-                  "already hold them. Equipped items, single items such as gear and, by default, "
-                  "your hotbar stay with you.\n\n"
-                  "Settings are in `com.parallel53.quickstackstore.cfg`: `Radius` and "
-                  "`KeepHotbar`.",
+        "version": "1.0.2",
+        "description": "One button sends your stackables into nearby chests that already hold them, and tells you exactly what didn't fit. Hotbar and equipped gear stay put.",
+        "readme": "Click **Quick Stack** on the inventory screen to move stackable items into nearby chests that already hold them. Equipped items, single items such as gear and, by default, your hotbar stay with you. When a chest is full it tells you which items had no room.\n\nSettings are in `com.parallel53.quickstackstore.cfg`: `Radius` and `KeepHotbar`.",
         "background": (70, 40, 110),
         "ink": (215, 180, 255),
         "icon": [
@@ -110,14 +99,9 @@ MODS = [
     {
         "name": "CriticalPath",
         "folder": "CriticalPath",
-        "version": "0.1.1",
-        "description": "Suggests the next step towards better tools, food and just enough armor for the next boss.",
-        "readme": "Shows a panel on the inventory screen with the next step towards the most survivability "
-                  "for the least time: tools that open up new materials, food you can cook, and only the "
-                  "armor and resistance meads needed for the next boss. Stations, upgrades and materials such as bronze appear "
-                  "as steps when a goal needs them. Once you have the armor it tells you to go fight. "
-                  "It reads your character's progress, so it works mid-game.\n\n"
-                  "Settings are in `com.parallel53.criticalpath.cfg`: `Suggestions` and `Notify`.",
+        "version": "0.1.2",
+        "description": "A pocket strategist for the inventory screen: the next tool, food, armor, mead, weapon or offering you need for the next boss, and nothing you don't. Then it points you at the boss.",
+        "readme": "Shows a panel under the inventory with the next steps towards the most survivability for the least time:\n\n- Tools that open up new materials, such as the bronze axe for fine wood.\n- The best new food you can make, labelled health, stamina or eitr.\n- For the next boss: just enough armor, the resistance it calls for (mead or gear), weapons or arrows that hit its weaknesses, a shield where it helps, and the summoning offering once your armor is up to it.\n- Finding the boss's altar comes last, once everything else is ready.\n\nStations, upgrades and materials appear only as steps towards a goal. It reads your character's progress, so it works mid-game.\n\nSettings are in `com.parallel53.criticalpath.cfg`: `Suggestions` and `Notify`.",
         "background": (96, 30, 30),
         "ink": (255, 190, 90),
         "icon": [
@@ -142,9 +126,9 @@ MODS = [
     {
         "name": "Ljosgjord",
         "folder": "Ljosgjord",
-        "version": "1.0.0",
-        "description": "Gives the Megingjord belt the Dverger Circlet's light while you wear it.",
-        "readme": "Ljósgjörð: wearing the Megingjord gives you the Dverger Circlet's light. Only you see it.",
+        "version": "1.0.1",
+        "description": "Why carry a torch when your belt can glow? Wearing Megingjord gives you the Dverger Circlet's light, so your head is free for a proper helmet.",
+        "readme": "Ljósgjörð (\"light-belt\"): wearing the Megingjord gives you the Dverger Circlet's light, so you can wear a real helmet and still see in the dark. Only you see the light.",
         "background": (60, 50, 20),
         "ink": (255, 225, 120),
         "icon": [
@@ -169,10 +153,9 @@ MODS = [
     {
         "name": "MenuModList",
         "folder": "MenuModList",
-        "version": "1.0.0",
-        "description": "Lists the loaded mods and the BepInEx version on the main menu.",
-        "readme": "Shows a panel on the main menu listing every loaded mod, including this one, "
-                  "with its version and the BepInEx version.",
+        "version": "1.0.1",
+        "description": "Shows every loaded mod and the BepInEx version on the main menu, so you know what's running before you sail off.",
+        "readme": "Shows a panel on the main menu listing every loaded mod, this one included, with its version and the BepInEx version.",
         "background": (32, 74, 58),
         "ink": (170, 235, 190),
         "icon": [

@@ -6,7 +6,7 @@ namespace Ljosgjord
 {
     // Gives the Megingjord the Dverger Circlet's light while it is worn. Only this
     // client adds the light, so other players don't see it.
-    [BepInPlugin("com.parallel53.ljosgjord", "Lj\u00f3sgj\u00f6r\u00f0", "1.0.0")]
+    [BepInPlugin("com.parallel53.ljosgjord", "Lj\u00f3sgj\u00f6r\u00f0", "1.0.1")]
     public class LjosgjordPlugin : BaseUnityPlugin
     {
         private const string BeltPrefab = "BeltStrength";

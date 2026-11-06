@@ -6,7 +6,7 @@ using UnityEngine;
 namespace MenuModList
 {
     // Shows BepInEx and every loaded plugin in a panel on the main menu.
-    [BepInPlugin("com.parallel53.menumodlist", "MenuModList", "1.0.0")]
+    [BepInPlugin("com.parallel53.menumodlist", "MenuModList", "1.0.1")]
     public class MenuModListPlugin : BaseUnityPlugin
     {
         private const float ReferenceHeight = 1080f;

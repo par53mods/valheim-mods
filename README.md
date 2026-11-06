@@ -4,12 +4,12 @@ BepInEx mods for Valheim, published on Thunderstore under `parallel53`.
 
 | Mod | What it does |
 |---|---|
-| [ChestSalvage](ChestSalvage) | Adds a Salvage button to chests that breaks the gear inside back into materials. |
-| [BrightBlueDeer](BrightBlueDeer) | Recolours deer, deer hides and the deer rug, and turns crows gold, in colours you choose. |
-| [QuickStackStore](QuickStackStore) | Adds an inventory button that moves your stackable items into nearby chests already holding them. |
-| [CriticalPath](CriticalPath) | Suggests the next step towards better tools, food and what you need for the next boss. |
-| [Ljosgjord](Ljosgjord) | Gives the Megingjord belt the Dverger Circlet's light while you wear it. |
-| [MenuModList](MenuModList) | Lists the loaded mods and the BepInEx version on the main menu. |
+| [ChestSalvage](ChestSalvage) | Regret that pile of old troll leather? A Salvage button on chests breaks the gear inside back into materials, shows the haul first and asks before anything is destroyed. |
+| [BrightBlueDeer](BrightBlueDeer) | Odin's paint bucket: deer turn electric blue, crows gold, boars pink, bears bright green and wolves turquoise. Only you see the makeover; every colour is yours to pick. |
+| [QuickStackStore](QuickStackStore) | One button sends your stackables into nearby chests that already hold them, and tells you exactly what didn't fit. Hotbar and equipped gear stay put. |
+| [CriticalPath](CriticalPath) | A pocket strategist for the inventory screen: the next tool, food, armor, mead, weapon or offering you need for the next boss, and nothing you don't. Then it points you at the boss. |
+| [Ljosgjord](Ljosgjord) | Why carry a torch when your belt can glow? Wearing Megingjord gives you the Dverger Circlet's light, so your head is free for a proper helmet. |
+| [MenuModList](MenuModList) | Shows every loaded mod and the BepInEx version on the main menu, so you know what's running before you sail off. |
 
 ## Building
 

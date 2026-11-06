@@ -11,7 +11,7 @@ namespace ChestSalvage
 {
     // Adds a Salvage button to the chest panel. It breaks the gear in the open
     // chest back into materials, after a confirmation listing what comes back.
-    [BepInPlugin("com.parallel53.chestsalvage", "Chest Salvage", "1.0.0")]
+    [BepInPlugin("com.parallel53.chestsalvage", "Chest Salvage", "1.0.1")]
     public class ChestSalvagePlugin : BaseUnityPlugin
     {
         private const float RefreshSeconds = 0.5f;
