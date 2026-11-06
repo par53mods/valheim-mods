@@ -8,9 +8,10 @@ using UnityEngine;
 
 namespace BrightBlueDeer
 {
-    // Recolours deer, alive or dead, along with deer hides, the deer rug and crows.
+    // Recolours deer, alive or dead, along with deer hides, the deer rug, crows,
+    // boars, bears and wolves.
     // Only this client's visuals change, so saves and other players are untouched.
-    [BepInPlugin("com.parallel53.brightbluedeer", "Bright Blue Deer", "1.0.0")]
+    [BepInPlugin("com.parallel53.brightbluedeer", "Bright Blue Deer", "1.0.1")]
     public class BrightBlueDeerPlugin : BaseUnityPlugin
     {
         private const string DeerPrefab = "Deer";
@@ -25,6 +26,31 @@ namespace BrightBlueDeer
         private const string DefaultColor = "20, 115, 255";
         private const string DefaultCrowColor = "255, 200, 40";
 
+        // Other animals painted like deer, with their young and their corpses.
+        private static readonly Animal[] Animals =
+        {
+            new Animal("BoarColor", "Boar", "255, 105, 180", "Boar", "Boar_piggy"),
+            new Animal("BearColor", "Bear", "60, 255, 60", "Bjorn", "Unbjorn"),
+            new Animal("WolfColor", "Wolf", "64, 224, 208", "Wolf", "Wolf_cub")
+        };
+
+        private class Animal
+        {
+            public readonly string Setting;
+            public readonly string Title;
+            public readonly string DefaultColor;
+            public readonly string[] Prefabs;
+            public ConfigEntry<string> Color;
+
+            public Animal(string setting, string title, string defaultColor, params string[] prefabs)
+            {
+                Setting = setting;
+                Title = title;
+                DefaultColor = defaultColor;
+                Prefabs = prefabs;
+            }
+        }
+
         // Original material to painted copy. Prefabs outlive a world, so a second
         // world load finds its painted materials here instead of repainting them.
         private static readonly Dictionary<Material, Material> PaintedMaterials = new Dictionary<Material, Material>();
@@ -38,11 +64,16 @@ namespace BrightBlueDeer
             log = Logger;
 
             ConfigEntry<bool> enabled = Config.Bind("General", "Enabled", true,
-                "Paint deer, deer hides, the deer rug and crows. Takes effect the next time the game starts.");
+                "Paint deer, deer hides, the deer rug, crows, boars, bears and wolves. Takes effect the next time the game starts.");
             ConfigEntry<string> color = Config.Bind("General", "Color", DefaultColor,
                 "Deer colour as red, green, blue, each from 0 to 255. Takes effect the next time the game starts.");
             ConfigEntry<string> birdColor = Config.Bind("General", "BirdColor", DefaultCrowColor,
                 "Crow colour as red, green, blue, each from 0 to 255. Takes effect the next time the game starts.");
+            foreach (Animal animal in Animals)
+            {
+                animal.Color = Config.Bind("General", animal.Setting, animal.DefaultColor,
+                    animal.Title + " colour as red, green, blue, each from 0 to 255. Takes effect the next time the game starts.");
+            }
 
             if (!enabled.Value)
             {
@@ -77,20 +108,46 @@ namespace BrightBlueDeer
                 return;
             }
 
-            Paint(deer, deerColor, DeerMinBrightness);
-
-            // The corpse is a separate prefab, spawned by the death effects.
-            foreach (EffectList.EffectData effect in deer.GetComponent<Character>().m_deathEffects.m_effectPrefabs)
-            {
-                if (effect.m_prefab != null && effect.m_prefab.GetComponent<Ragdoll>() != null)
-                {
-                    Paint(effect.m_prefab, deerColor, DeerMinBrightness);
-                }
-            }
-
+            PaintCreature(deer, deerColor);
             PaintIfFound(__instance, HidePrefab, deerColor, DeerMinBrightness);
             PaintIfFound(__instance, RugPrefab, deerColor, DeerMinBrightness);
             PaintIfFound(__instance, CrowPrefab, crowColor, CrowMinBrightness);
+
+            foreach (Animal animal in Animals)
+            {
+                Color color = ParseColor(animal.Color.Value, animal.DefaultColor);
+                foreach (string name in animal.Prefabs)
+                {
+                    GameObject prefab = __instance.GetPrefab(name);
+                    if (prefab == null)
+                    {
+                        log.LogWarning("No " + name + " prefab found");
+                        continue;
+                    }
+
+                    PaintCreature(prefab, color);
+                }
+            }
+        }
+
+        private static void PaintCreature(GameObject prefab, Color color)
+        {
+            Paint(prefab, color, DeerMinBrightness);
+
+            // The corpse is a separate prefab, spawned by the death effects.
+            Character character = prefab.GetComponent<Character>();
+            if (character == null)
+            {
+                return;
+            }
+
+            foreach (EffectList.EffectData effect in character.m_deathEffects.m_effectPrefabs)
+            {
+                if (effect.m_prefab != null && effect.m_prefab.GetComponent<Ragdoll>() != null)
+                {
+                    Paint(effect.m_prefab, color, DeerMinBrightness);
+                }
+            }
         }
 
         private static void PaintIfFound(ZNetScene scene, string name, Color color, float minBrightness)

@@ -48,12 +48,13 @@ MODS = [
     {
         "name": "BrightBlueDeer",
         "folder": "BrightBlueDeer",
-        "version": "1.0.0",
-        "description": "Recolours deer, deer hides and the deer rug, and turns crows gold, in colours you choose.",
-        "readme": "Paints deer, their corpses, deer hides, the deer rug and crows. Only your own game "
-                  "changes; other players see them as normal.\n\n"
-                  "Settings are in `com.parallel53.brightbluedeer.cfg`: `Enabled`, `Color` for "
-                  "deer and `BirdColor` for crows (red, green, blue, each from 0 to 255). Restart the game after changing them.",
+        "version": "1.0.1",
+        "description": "Recolours deer blue, crows gold, boars pink, bears green and wolves turquoise, in colours you choose.",
+        "readme": "Paints deer, their corpses, deer hides, the deer rug and crows, plus boars, bears and wolves "
+                  "(young and corpses too). Only your own game changes; other players see them as normal.\n\n"
+                  "Settings are in `com.parallel53.brightbluedeer.cfg`: `Enabled`, `Color` for deer, "
+                  "`BirdColor` for crows, `BoarColor`, `BearColor` and `WolfColor` (red, green, blue, each "
+                  "from 0 to 255). Restart the game after changing them.",
         "background": (12, 60, 140),
         "ink": (110, 190, 255),
         "icon": [
