@@ -6,7 +6,7 @@ BepInEx mods for Valheim, published on Thunderstore under `parallel53`.
 |---|---|
 | [ChestSalvage](ChestSalvage) | Regret that pile of old troll leather? A Salvage button on chests breaks the gear inside back into materials, shows the haul first and asks before anything is destroyed. |
 | [BrightBlueDeer](BrightBlueDeer) | Odin's paint bucket: deer turn electric blue, crows gold, boars pink, bears bright green, wolves turquoise and necks violet. Only you see the makeover; every colour is yours to pick. |
-| [QuickStackStore](QuickStackStore) | One button sends your stackables into nearby chests that already hold them, and names anything that didn't fit. Equipped gear stays put, and so does your hotbar by default. |
+| [QuickStackStore](QuickStackStore) | One button sends your materials into nearby chests that already hold them, and names anything that didn't fit. Cooked food, meads, equipped gear and your hotbar stay with you by default. |
 | [CriticalPath](CriticalPath) | A pocket strategist for the inventory screen: the next tool, food, armor, mead, weapon or offering you need for the next boss, and nothing you don't. Finding the boss is still up to you. |
 | [Ljosgjord](Ljosgjord) | Why carry a torch when your belt can glow? Wearing Megingjord gives you the Dverger Circlet's light, so your head is free for a proper helmet. |
 | [MenuModList](MenuModList) | Shows every loaded mod and the BepInEx version on the main menu, so you know what's running before you sail off. |

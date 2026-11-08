@@ -72,9 +72,9 @@ MODS = [
     {
         "name": "QuickStackStore",
         "folder": "QuickStackStore",
-        "version": "1.0.3",
-        "description": "One button sends your stackables into nearby chests that already hold them, and names anything that didn't fit. Equipped gear stays put, and so does your hotbar by default.",
-        "readme": "Click **Quick Stack** on the inventory screen to move stackable items into nearby chests that already hold them. Equipped items, single items such as gear and, by default, your hotbar stay with you. When a chest is full it tells you which items had no room.\n\nSettings are in `com.parallel53.quickstackstore.cfg`: `Radius` and `KeepHotbar`.",
+        "version": "1.0.4",
+        "description": "One button sends your materials into nearby chests that already hold them, and names anything that didn't fit. Cooked food, meads, equipped gear and your hotbar stay with you by default.",
+        "readme": "Click **Quick Stack** on the inventory screen to move stackable items into nearby chests that already hold them. It then says what went in and which items had no room.\n\nEquipped items and single items such as gear always stay with you. By default so do cooked food, meads and your hotbar.\n\nSettings are in `com.parallel53.quickstackstore.cfg`:\n\n- `Radius`: how far away a chest can be, in metres (default 10)\n- `KeepHotbar`: leave your hotbar alone (default on)\n- `StackMaterials`: stack materials such as wood, ore and hides (default on)\n- `StackRawFood`: stack food eaten as found, such as berries, mushrooms and honey (default on)\n- `StackCookedFood`: stack food made at a cooking station, oven or cauldron (default off)\n- `StackMeads`: stack meads and other drinks (default off)\n\nOther stackables, such as arrows and trophies, are always stacked.",
         "background": (70, 40, 110),
         "ink": (215, 180, 255),
         "icon": [

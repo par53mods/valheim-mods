@@ -15,7 +15,7 @@ namespace QuickStackStore
     // stackable items from your inventory into nearby chests already holding them.
     // Each chest goes through the game's own Stack All
     // request, so a chest in use or owned by another player is treated the same way.
-    [BepInPlugin("com.parallel53.quickstackstore", "QuickStackStore", "1.0.3")]
+    [BepInPlugin("com.parallel53.quickstackstore", "QuickStackStore", "1.0.4")]
     public class QuickStackStorePlugin : BaseUnityPlugin
     {
         private const int HotbarRow = 0;
@@ -31,6 +31,10 @@ namespace QuickStackStore
 
         private static ConfigEntry<float> radius;
         private static ConfigEntry<bool> keepHotbar;
+        private static ConfigEntry<bool> stackMaterials;
+        private static ConfigEntry<bool> stackRawFood;
+        private static ConfigEntry<bool> stackCookedFood;
+        private static ConfigEntry<bool> stackMeads;
 
         private const float DropFraction = 0.25f;
 
@@ -58,6 +62,14 @@ namespace QuickStackStore
                     new AcceptableValueRange<float>(1f, 50f)));
             keepHotbar = Config.Bind("General", "KeepHotbar", true,
                 "Leave items on your hotbar where they are.");
+            stackMaterials = Config.Bind("Items", "StackMaterials", true,
+                "Stack materials such as wood, ore and hides.");
+            stackRawFood = Config.Bind("Items", "StackRawFood", true,
+                "Stack food eaten as found, such as berries, mushrooms and honey.");
+            stackCookedFood = Config.Bind("Items", "StackCookedFood", false,
+                "Stack food made at a cooking station, oven or cauldron.");
+            stackMeads = Config.Bind("Items", "StackMeads", false,
+                "Stack meads and other drinks.");
 
             new Harmony("com.parallel53.quickstackstore").PatchAll(typeof(QuickStackStorePlugin));
         }
@@ -100,6 +112,7 @@ namespace QuickStackStore
         {
             if (reporting && Time.unscaledTime >= reportBy)
             {
+                log.LogInfo(Requested.Count + " chest(s) had not answered after " + AnswerSeconds + "s; reporting anyway");
                 Report();
             }
 
@@ -242,7 +255,86 @@ namespace QuickStackStore
         private static bool StaysWithPlayer(ItemDrop.ItemData item)
         {
             return item.m_shared.m_maxStackSize <= 1 ||
-                (keepHotbar.Value && item.m_gridPos.y == HotbarRow);
+                (keepHotbar.Value && item.m_gridPos.y == HotbarRow) ||
+                !StacksKind(item.m_shared);
+        }
+
+        // Other kinds, such as arrows and trophies, are always stacked.
+        private static bool StacksKind(ItemDrop.ItemData.SharedData shared)
+        {
+            switch (shared.m_itemType)
+            {
+                case ItemDrop.ItemData.ItemType.Material:
+                    return stackMaterials.Value;
+                case ItemDrop.ItemData.ItemType.Consumable:
+                    if (IsMead(shared))
+                    {
+                        return stackMeads.Value;
+                    }
+
+                    return IsCooked(shared) ? stackCookedFood.Value : stackRawFood.Value;
+                default:
+                    return true;
+            }
+        }
+
+        // Names of food that something in the game makes: a recipe, which covers
+        // the cauldron, or a cooking station, which covers the oven too.
+        private static HashSet<string> cooked;
+
+        private static bool IsCooked(ItemDrop.ItemData.SharedData shared)
+        {
+            if (cooked == null)
+            {
+                cooked = FindCooked();
+            }
+
+            return cooked.Contains(shared.m_name);
+        }
+
+        private static HashSet<string> FindCooked()
+        {
+            HashSet<string> names = new HashSet<string>();
+            if (ObjectDB.instance != null)
+            {
+                foreach (Recipe recipe in ObjectDB.instance.m_recipes)
+                {
+                    if (recipe != null && recipe.m_item != null)
+                    {
+                        names.Add(recipe.m_item.m_itemData.m_shared.m_name);
+                    }
+                }
+            }
+
+            if (ZNetScene.instance != null)
+            {
+                foreach (GameObject prefab in ZNetScene.instance.m_prefabs)
+                {
+                    CookingStation station = prefab != null ? prefab.GetComponent<CookingStation>() : null;
+                    if (station == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (CookingStation.ItemConversion conversion in station.m_conversion)
+                    {
+                        if (conversion != null && conversion.m_to != null)
+                        {
+                            names.Add(conversion.m_to.m_itemData.m_shared.m_name);
+                        }
+                    }
+                }
+            }
+
+            log.LogInfo("Found " + names.Count + " items made by recipes or cooking stations");
+            return names;
+        }
+
+        // Meads are drinks with an effect and no food value.
+        private static bool IsMead(ItemDrop.ItemData.SharedData shared)
+        {
+            return shared.m_isDrink ||
+                (shared.m_food <= 0f && shared.m_foodStamina <= 0f && shared.m_foodEitr <= 0f);
         }
 
         // The game answers each request here, possibly a moment after the key press.
@@ -257,8 +349,23 @@ namespace QuickStackStore
         [HarmonyPatch(typeof(Container), "RPC_StackResponse")]
         private static void AfterStackResponse()
         {
+            bool ours = answeringRequest;
             answeringRequest = false;
-            if (reporting && Requested.Count == 0)
+            if (!ours)
+            {
+                return;
+            }
+
+            // A chest that answers after the report has been shown still takes
+            // items, so the report is redone to match.
+            if (!reporting)
+            {
+                log.LogInfo("A chest answered late; updating the report");
+                reporting = true;
+                reportBy = Time.unscaledTime + AnswerSeconds;
+            }
+
+            if (Requested.Count == 0)
             {
                 Report();
             }
