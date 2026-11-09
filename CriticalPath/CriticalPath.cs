@@ -13,7 +13,7 @@ namespace CriticalPath
 {
     // Shows what to make next on the inventory screen, worked out from what this
     // character has discovered, so a character mid-game starts in the right place.
-    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.4")]
+    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.5")]
     public class CriticalPathPlugin : BaseUnityPlugin
     {
         private const string BuiltKey = "parallel53.criticalpath.built";

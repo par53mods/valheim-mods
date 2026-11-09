@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 (2026-11-09)
+
+- Readme wording: the sparkle changes are described as defaults, since each is a setting.
+- Corrects the 0.1.1 entry below, which said Drift keeps sparkles from rising higher than the game's. That is only true at its default of 0.5; higher values let them rise higher.
+- No gameplay changes.
+
 ## 0.1.1 (2026-11-09)
 
 - Gentler defaults: twice as many sparkles lasting twice as long, 1.5 times as big, 1.5 times as bright and spread 1.5 times as wide.

@@ -14,7 +14,7 @@ namespace DudeWheresMySpear
     // more spread out. They are a particle effect inside each item's prefab, so
     // changing the prefabs changes every item dropped afterwards. Each change is
     // worked out from the game's own values, so settings can change while playing.
-    [BepInPlugin("com.parallel53.dudewheresmyspear", "DudeWheresMySpear", "0.1.1")]
+    [BepInPlugin("com.parallel53.dudewheresmyspear", "DudeWheresMySpear", "0.1.2")]
     public class DudeWheresMySpearPlugin : BaseUnityPlugin
     {
         // The game's sparkle effect, by material name.

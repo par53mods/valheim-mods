@@ -10,7 +10,7 @@ namespace SpeedBoat
     // Adds two sail speeds above Full and a fast reverse, and lets rowing be
     // faster or slower. The game steers each ship from its owner's machine, which
     // is the person at the helm, so that is where the extra speed is kept.
-    [BepInPlugin("com.parallel53.speedboat", "SpeedBoat", "0.1.0")]
+    [BepInPlugin("com.parallel53.speedboat", "SpeedBoat", "0.1.1")]
     public class SpeedBoatPlugin : BaseUnityPlugin
     {
         private const float LabelFontSize = 18f;

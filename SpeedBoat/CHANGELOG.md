@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 (2026-11-09)
+
+- Readme wording: the +1, +2 and fast reverse speeds are described as defaults, since each is a setting. No gameplay changes.
+
 ## 0.1.0 (2026-11-06)
 
 - First release.

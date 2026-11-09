@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5 (2026-11-09)
+
+- Description and readme wording: they no longer promise it never suggests anything you don't need, or the most survivability for the least time. The armor target is described as a level the mod sets for each boss. No gameplay changes.
+
 ## 0.1.4 (2026-11-09)
 
 - The panel steps aside while you split a stack.

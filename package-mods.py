@@ -18,9 +18,9 @@ MODS = [
     {
         "name": "ChestSalvage",
         "folder": "ChestSalvage",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "description": "Regret that pile of old troll leather? A Salvage button on chests breaks the gear inside back into materials, shows the haul first and asks before anything is destroyed.",
-        "readme": "Adds a **Salvage** button to the chest panel. It counts the gear that qualifies, lists the materials you'd get back and asks before anything is broken down. Half the crafting cost and all of the upgrade costs come back by default, rounded up, and only near the station the item was made at.\n\nSettings are in `com.parallel53.chestsalvage.cfg`: `BaseReturnRate`, `UpgradeReturnRate` and `RequireStation`.",
+        "readme": "Adds a **Salvage** button to the chest panel. It counts the gear that qualifies, lists the materials you'd get back and asks before anything is broken down. By default you get back half the crafting cost and all of the upgrade costs, rounded up, and an item is only salvaged while you're near the kind of crafting station its recipe uses.\n\nSettings are in `com.parallel53.chestsalvage.cfg`: `BaseReturnRate`, `UpgradeReturnRate` and `RequireStation`.",
         "background": (120, 72, 28),
         "ink": (250, 205, 110),
         "icon": [
@@ -99,9 +99,9 @@ MODS = [
     {
         "name": "CriticalPath",
         "folder": "CriticalPath",
-        "version": "0.1.4",
-        "description": "A pocket strategist for the inventory screen: the next tool, food, armor, mead, weapon or offering you need for the next boss, and nothing you don't. Finding the boss is still up to you.",
-        "readme": "Shows a panel under the inventory with the next steps towards the most survivability for the least time:\n\n- Tools that open up new materials, such as the bronze axe for fine wood.\n- The best new food you can make, labelled health, stamina or eitr.\n- For the next boss: just enough armor, the resistance it calls for (mead or gear), weapons or arrows that hit its weaknesses, a shield where it helps, and the summoning offering once your armor is up to it.\n- Once you're ready, it reminds you to find the boss's altar and says which kind of Vegvisir to look for. It never marks the altar or reveals where it is.\n\nStations, upgrades and materials appear only as steps towards a goal. It reads your character's progress, so it works mid-game.\n\nSettings are in `com.parallel53.criticalpath.cfg`: `Suggestions` and `Notify`.",
+        "version": "0.1.5",
+        "description": "A pocket strategist for the inventory screen: suggests the next tool, food, armor, mead, weapon or offering to work towards for the next boss. Finding the boss is still up to you.",
+        "readme": "Shows a panel under the inventory suggesting what to work on next:\n\n- Tools that open up new materials, such as the bronze axe for fine wood.\n- New food worth making, labelled health, stamina or eitr.\n- For the next boss: armor up to a level the mod sets for that boss, the resistance it calls for (mead or gear), weapons or arrows that hit its weaknesses, a shield where it helps, and the summoning offering once your armor is up to it.\n- Once you're ready, it reminds you to find the boss's altar and says which kind of Vegvisir to look for. It never marks the altar or reveals where it is.\n\nStations, upgrades and materials appear only as steps towards a goal. It reads your character's progress, so it works mid-game.\n\nSettings are in `com.parallel53.criticalpath.cfg`: `Suggestions` and `Notify`.",
         "background": (96, 30, 30),
         "ink": (255, 190, 90),
         "icon": [
@@ -180,10 +180,10 @@ MODS = [
     {
         "name": "SpeedBoat",
         "folder": "SpeedBoat",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Full sail not full enough? Two extra sail speeds above Full, a fast reverse for docking in a hurry, and rowing speed you can tune. A label by the speed indicator shows the level.",
-        "readme": "Press forward at Full sail for **+1** (twice the sail force) and again for **+2** (three times). "
-                  "Press back at reverse for **fast** reverse (twice the rowing force). A label beside the ship's "
+        "readme": "Press forward at Full sail for **+1** and again for **+2**: by default twice and three times Full's sail force. "
+                  "Press back at reverse for **fast** reverse: by default twice the reverse rowing force. A label beside the ship's "
                   "speed indicator shows which level you're at, and stopping clears it. The extra speeds still "
                   "depend on the wind like normal sailing.\n\n"
                   "Rowing forward and in reverse stay at the game's speed unless you change them.\n\n"
@@ -214,10 +214,11 @@ MODS = [
     {
         "name": "DudeWheresMySpear",
         "folder": "DudeWheresMySpear",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Dropped your spear in the tall grass again? Makes the sparkles on dropped items brighter, more plentiful and wider spread, so loot is easier to spot.",
-        "readme": "Items lying on the ground give off a few faint sparkles. This doubles how many there are and "
-                  "how long they last, and makes them bigger, brighter and spread wider around the item, while keeping them close to it. Only your "
+        "readme": "Items lying on the ground give off a few faint sparkles. By default this mod doubles how many there are and "
+                  "how long they last, makes them 1.5 times as big and as bright, spreads them 1.5 times as wide, and halves how fast "
+                  "they drift, so they rise about as high as the game's. Only your "
                   "game changes; other players see the usual sparkles.\n\n"
                   "Settings are in `com.parallel53.dudewheresmyspear.cfg`: `Count` (2), `Size` (1.5), `Lifetime` (2), "
                   "`Intensity` (1.5), `Spread` (1.5) and `Drift` (0.5), each a multiple of the game's. Changes take effect as soon as "
