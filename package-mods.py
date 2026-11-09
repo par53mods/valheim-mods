@@ -214,13 +214,13 @@ MODS = [
     {
         "name": "DudeWheresMySpear",
         "folder": "DudeWheresMySpear",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Dropped your spear in the tall grass again? Makes the sparkles on dropped items brighter, more plentiful and wider spread, so loot is easier to spot.",
-        "readme": "Items lying on the ground give off a few faint sparkles. This triples how many there are, how "
-                  "big they are and how long they last, and makes them brighter and spread wider around the item. Only your "
+        "readme": "Items lying on the ground give off a few faint sparkles. This doubles how many there are and "
+                  "how long they last, and makes them bigger, brighter and spread wider around the item, while keeping them close to it. Only your "
                   "game changes; other players see the usual sparkles.\n\n"
-                  "Settings are in `com.parallel53.dudewheresmyspear.cfg`: `Count` (3), `Size` (3), `Lifetime` (3), "
-                  "`Intensity` (2) and `Spread` (2), each a multiple of the game's. Changes take effect as soon as "
+                  "Settings are in `com.parallel53.dudewheresmyspear.cfg`: `Count` (2), `Size` (1.5), `Lifetime` (2), "
+                  "`Intensity` (1.5), `Spread` (1.5) and `Drift` (0.5), each a multiple of the game's. Changes take effect as soon as "
                   "you save the file, even mid-game, including on items already on the ground.",
         "background": (60, 40, 10),
         "ink": (255, 220, 90),

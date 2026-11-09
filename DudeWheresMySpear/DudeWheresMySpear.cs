@@ -14,7 +14,7 @@ namespace DudeWheresMySpear
     // more spread out. They are a particle effect inside each item's prefab, so
     // changing the prefabs changes every item dropped afterwards. Each change is
     // worked out from the game's own values, so settings can change while playing.
-    [BepInPlugin("com.parallel53.dudewheresmyspear", "DudeWheresMySpear", "0.1.0")]
+    [BepInPlugin("com.parallel53.dudewheresmyspear", "DudeWheresMySpear", "0.1.1")]
     public class DudeWheresMySpearPlugin : BaseUnityPlugin
     {
         // The game's sparkle effect, by material name.
@@ -51,6 +51,12 @@ namespace DudeWheresMySpear
             public ParticleSystem.Burst[] Bursts;
             public float Radius;
             public Vector3 Scale;
+
+            // What moves a sparkle once it appears.
+            public float Speed;
+            public float Gravity;
+            public Vector3 Velocity;
+            public Vector3 Force;
         }
 
         private static ManualLogSource log;
@@ -59,15 +65,17 @@ namespace DudeWheresMySpear
         private static ConfigEntry<float> spread;
         private static ConfigEntry<float> size;
         private static ConfigEntry<float> lifetime;
+        private static ConfigEntry<float> drift;
 
         private void Awake()
         {
             log = Logger;
-            intensity = Multiplier("Intensity", 2f, "Brightness of each sparkle.");
-            count = Multiplier("Count", 3f, "How many sparkles each item gives off.");
-            spread = Multiplier("Spread", 2f, "How far around the item the sparkles appear.");
-            size = Multiplier("Size", 3f, "How big each sparkle is.");
-            lifetime = Multiplier("Lifetime", 3f, "How long each sparkle lasts.");
+            intensity = Multiplier("Intensity", 1.5f, "Brightness of each sparkle.");
+            count = Multiplier("Count", 2f, "How many sparkles each item gives off.");
+            spread = Multiplier("Spread", 1.5f, "How far around the item the sparkles appear.");
+            size = Multiplier("Size", 1.5f, "How big each sparkle is.");
+            lifetime = Multiplier("Lifetime", 2f, "How long each sparkle lasts.");
+            drift = Multiplier("Drift", 0.5f, "How fast each sparkle drifts away from the item. Longer-lasting sparkles drift further, so this keeps them close.");
             configWritten = WrittenAt();
 
             new Harmony("com.parallel53.dudewheresmyspear").PatchAll(typeof(DudeWheresMySpearPlugin));
@@ -133,7 +141,7 @@ namespace DudeWheresMySpear
             }
 
             log.LogInfo("Settings changed: count " + count.Value + ", size " + size.Value + ", lifetime " + lifetime.Value +
-                ", intensity " + intensity.Value + ", spread " + spread.Value + ". Updated " + dropped + " items on the ground.");
+                ", intensity " + intensity.Value + ", spread " + spread.Value + ", drift " + drift.Value + ". Updated " + dropped + " items on the ground.");
         }
 
         [HarmonyPostfix]
@@ -275,7 +283,13 @@ namespace DudeWheresMySpear
                 RateOverDistance = emission.rateOverDistanceMultiplier,
                 Bursts = bursts,
                 Radius = particles.shape.radius,
-                Scale = particles.shape.scale
+                Scale = particles.shape.scale,
+                Speed = main.startSpeedMultiplier,
+                Gravity = main.gravityModifierMultiplier,
+                Velocity = new Vector3(particles.velocityOverLifetime.xMultiplier,
+                    particles.velocityOverLifetime.yMultiplier, particles.velocityOverLifetime.zMultiplier),
+                Force = new Vector3(particles.forceOverLifetime.xMultiplier,
+                    particles.forceOverLifetime.yMultiplier, particles.forceOverLifetime.zMultiplier)
             };
         }
 
@@ -288,6 +302,19 @@ namespace DudeWheresMySpear
             main.startLifetimeMultiplier = original.Lifetime * lifetime.Value;
             main.startSizeMultiplier = original.Size * size.Value;
             main.startColor = Brighter(original.Color, intensity.Value);
+
+            // Speed, gravity, velocity and force all scaled alike, so each sparkle
+            // follows the game's path, only that much shorter.
+            main.startSpeedMultiplier = original.Speed * drift.Value;
+            main.gravityModifierMultiplier = original.Gravity * drift.Value;
+            ParticleSystem.VelocityOverLifetimeModule velocity = particles.velocityOverLifetime;
+            velocity.xMultiplier = original.Velocity.x * drift.Value;
+            velocity.yMultiplier = original.Velocity.y * drift.Value;
+            velocity.zMultiplier = original.Velocity.z * drift.Value;
+            ParticleSystem.ForceOverLifetimeModule force = particles.forceOverLifetime;
+            force.xMultiplier = original.Force.x * drift.Value;
+            force.yMultiplier = original.Force.y * drift.Value;
+            force.zMultiplier = original.Force.z * drift.Value;
 
             ParticleSystem.EmissionModule emission = particles.emission;
             emission.rateOverTimeMultiplier = original.Rate * count.Value;
@@ -324,6 +351,12 @@ namespace DudeWheresMySpear
                 ", rate " + emission.rateOverTimeMultiplier + " (" + emission.rateOverTime.mode + ")" +
                 ", bursts " + string.Join(" ", bursts.Select(burst => burst.count.constant + "@" + burst.time + "/" + burst.repeatInterval).ToArray()) +
                 ", shape " + particles.shape.shapeType + " radius " + particles.shape.radius +
+                ", speed " + main.startSpeedMultiplier + ", gravity " + main.gravityModifierMultiplier +
+                ", velocity " + (particles.velocityOverLifetime.enabled ? new Vector3(particles.velocityOverLifetime.xMultiplier,
+                    particles.velocityOverLifetime.yMultiplier, particles.velocityOverLifetime.zMultiplier).ToString() : "off") +
+                ", force " + (particles.forceOverLifetime.enabled ? new Vector3(particles.forceOverLifetime.xMultiplier,
+                    particles.forceOverLifetime.yMultiplier, particles.forceOverLifetime.zMultiplier).ToString() : "off") +
+                ", noise " + (particles.noise.enabled ? particles.noise.strengthMultiplier.ToString() : "off") +
                 ", emitting " + emission.enabled;
         }
 
