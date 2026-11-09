@@ -265,8 +265,21 @@ def icon_png(mod):
             png_chunk(b"IDAT", zlib.compress(bytes(rows), 9)) + png_chunk(b"IEND", b""))
 
 
+def changelog(mod):
+    """The mod's CHANGELOG.md, which must have an entry for the version being packaged."""
+    path = ROOT / mod["folder"] / "CHANGELOG.md"
+    if not path.is_file():
+        raise SystemExit("{} has no CHANGELOG.md".format(mod["name"]))
+    text = path.read_text(encoding="utf-8")
+    heading = "## {} (".format(mod["version"])
+    if not any(line.startswith(heading) for line in text.splitlines()):
+        raise SystemExit("{}'s CHANGELOG.md has no entry for {}".format(mod["name"], mod["version"]))
+    return text
+
+
 def package(mod):
     dll = ROOT / mod["folder"] / "bin" / (mod["name"] + ".dll")
+    changes = changelog(mod)
     manifest = {
         "name": mod["name"],
         "version_number": mod["version"],
@@ -279,6 +292,7 @@ def package(mod):
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
         archive.writestr("manifest.json", json.dumps(manifest, indent=2) + "\n")
         archive.writestr("README.md", "# {}\n\n{}\n".format(mod["name"], mod["readme"]))
+        archive.writestr("CHANGELOG.md", changes)
         archive.writestr("icon.png", icon_png(mod))
         archive.write(dll, dll.name)
 
