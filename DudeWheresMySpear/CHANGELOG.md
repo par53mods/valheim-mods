@@ -3,7 +3,7 @@
 ## 0.1.1 (2026-11-09)
 
 - Gentler defaults: twice as many sparkles lasting twice as long, 1.5 times as big, 1.5 times as bright and spread 1.5 times as wide.
-- New `Drift` setting (default 0.5): sparkles drift away from the item at half the game's speed, so the longer-lasting ones rise no higher than the game's.
+- New `Drift` setting: how fast sparkles drift away from the item, as a multiple of the game's speed. The default, 0.5, keeps the longer-lasting sparkles from rising higher than the game's; raise it to let them go higher.
 - An existing config file keeps its values. Delete it to get the new defaults.
 - The description says the mod makes dropped items easier to spot, which is all it does.
 
