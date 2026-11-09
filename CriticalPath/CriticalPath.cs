@@ -13,7 +13,7 @@ namespace CriticalPath
 {
     // Shows what to make next on the inventory screen, worked out from what this
     // character has discovered, so a character mid-game starts in the right place.
-    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.3")]
+    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.4")]
     public class CriticalPathPlugin : BaseUnityPlugin
     {
         private const string BuiltKey = "parallel53.criticalpath.built";
@@ -88,7 +88,8 @@ namespace CriticalPath
             {
                 Arrows = 200,
                 Ranged = true,
-                Find = "Read a Vegvisir in the Mountains to mark her altar."
+                Find = "Read a Vegvisir in the Mountains to mark her altar.",
+                ResistAgainst = "the Mountains' cold and Moder's frost breath"
             },
             new Boss("GoblinKing", 60f, "Offer 5 fuling totems. Sprint behind his stone pillars.",
                 HitData.DamageType.Fire, ShieldUse.None,
@@ -225,6 +226,9 @@ namespace CriticalPath
             // Where to find the Vegvisir that marks the altar on the map.
             public string Find = DefaultFind;
 
+            // What the resistance protects against, when more than the fight itself.
+            public string ResistAgainst = "";
+
             public Boss(string prefab, float targetArmor, string hint, HitData.DamageType resist, ShieldUse shield,
                 params Need[] bring)
             {
@@ -271,6 +275,7 @@ namespace CriticalPath
             public List<Shortfall> Missing;
 
             public HitData.DamageType Resist;
+            public string ResistAgainst;
 
             // The strongest resistance to it from worn gear or a mead on hand.
             public int Have;
@@ -342,7 +347,7 @@ namespace CriticalPath
         private void LateUpdate()
         {
             InventoryGui gui = InventoryGui.instance;
-            bool show = panelText != null && gui != null && InventoryGui.IsVisible();
+            bool show = panelText != null && gui != null && InventoryGui.IsVisible() && !Splitting(gui);
             if (panel == null)
             {
                 if (!show)
@@ -363,6 +368,12 @@ namespace CriticalPath
                 panelLabel.text = panelText;
                 PlacePanel(gui);
             }
+        }
+
+        // The split dialog opens where the panel sits, so the panel steps aside.
+        private static bool Splitting(InventoryGui gui)
+        {
+            return gui.m_splitDialog != null && gui.m_splitDialog.gameObject.activeInHierarchy;
         }
 
         // Built on the inventory screen's canvas, with the crafting panel's
@@ -474,8 +485,29 @@ namespace CriticalPath
 
             float width = inventory.width;
             float height = panelLabel.GetPreferredValues(panelText, width - 2f * Padding, 0f).y + 2f * Padding;
+            Rect screen = canvas.rect;
+            Vector2 topLeft = new Vector2(inventory.xMin, bottom - Gap);
+
+            // An open chest can push it off the bottom of the screen, so then it
+            // goes beside the inventory, and failing that it is kept on screen.
+            if (topLeft.y - height < screen.yMin)
+            {
+                float right = inventory.xMax;
+                if (gui.m_container != null && gui.m_container.gameObject.activeInHierarchy)
+                {
+                    right = Mathf.Max(right, LocalRect(canvas, gui.m_container).xMax);
+                }
+
+                if (right + Gap + width <= screen.xMax)
+                {
+                    topLeft = new Vector2(right + Gap, inventory.yMax);
+                }
+
+                topLeft.y = Mathf.Clamp(topLeft.y, screen.yMin + height, screen.yMax);
+            }
+
             panel.sizeDelta = new Vector2(width, height);
-            panel.anchoredPosition = new Vector2(inventory.xMin, bottom - Gap) - canvas.rect.center;
+            panel.anchoredPosition = topLeft - screen.center;
         }
 
         private static Rect LocalRect(RectTransform canvas, RectTransform window)
@@ -609,6 +641,7 @@ namespace CriticalPath
                             .Where(missing => missing.Short > 0)
                             .ToList(),
                         Resist = boss.Resist,
+                        ResistAgainst = boss.ResistAgainst,
                         Shield = boss.Shield,
                         Arrows = boss.Arrows,
                         Ranged = boss.Ranged,
@@ -759,7 +792,7 @@ namespace CriticalPath
 
             // Settled before readiness, since a stronger resistance to make means not ready yet.
             Suggestion resist = goal != null && goal.Resist != NoResistance ? ResistGoal(plan, stock, goal) : null;
-            if (resist != null)
+            if (resist != null || (goal != null && goal.Resist != NoResistance && goal.Have == 0))
             {
                 goal.Resisted = false;
             }
@@ -947,7 +980,9 @@ namespace CriticalPath
         private static Suggestion ResistGoal(Plan plan, Dictionary<string, int> stock, BossGoal goal)
         {
             string resist = goal.Resist.ToString().ToLowerInvariant() + " resist";
-            string reason = "Gives " + resist + " for " + goal.Name + ".";
+            string reason = goal.ResistAgainst.Length > 0
+                ? "Gives " + resist + " against " + goal.ResistAgainst + "."
+                : "Gives " + resist + " for " + goal.Name + ".";
             return ItemsByName()
                 .Where(pair => plan.Planner.Makings.ContainsKey(pair.Key))
                 .Select(pair => new
@@ -957,6 +992,20 @@ namespace CriticalPath
                     item = pair.Key
                 })
                 .Where(provider => Mathf.Max(provider.drink, provider.wear) > goal.Have)
+                .Where(provider =>
+                {
+                    if (plan.Planner.Make(provider.item) != null)
+                    {
+                        return true;
+                    }
+
+                    if (MissingItems.Add("resist:" + provider.item))
+                    {
+                        log.LogInfo(Localized(provider.item) + " gives " + resist + " but can't be made yet: a material isn't known");
+                    }
+
+                    return false;
+                })
                 .Select(provider => new
                 {
                     strength = Mathf.Max(provider.drink, provider.wear),
