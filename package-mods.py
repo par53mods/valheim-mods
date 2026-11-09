@@ -155,7 +155,7 @@ MODS = [
         "folder": "MenuModList",
         "version": "1.0.1",
         "description": "Shows every loaded mod and the BepInEx version on the main menu, so you know what's running before you sail off.",
-        "readme": "Shows a panel on the main menu listing every loaded mod, this one included, with its version and the BepInEx version.",
+        "readme": "Shows a panel on the main menu listing every loaded mod, this one included, with its version and the BepInEx version. The panel is never taller than half the screen; a longer list scrolls.",
         "background": (32, 74, 58),
         "ink": (170, 235, 190),
         "icon": [

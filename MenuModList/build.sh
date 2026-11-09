@@ -1,5 +1,6 @@
 #!/bin/bash
 # Builds MenuModList.dll against the installed game and copies it into BepInEx/plugins.
+# Extra arguments go to the compiler, e.g. ./build.sh -define:FAKE_MODS to test scrolling.
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -20,7 +21,7 @@ csc -nologo -noconfig -nostdlib+ -target:library -optimize+ -out:bin/MenuModList
     -r:"$MANAGED/UnityEngine.TextRenderingModule.dll" \
     -r:"$MANAGED/assembly_valheim.dll" \
     -r:"$CORE/BepInEx.dll" \
-    MenuModList.cs
+    "$@" MenuModList.cs
 
 mkdir -p "$PLUGIN_DIR"
 cp bin/MenuModList.dll "$PLUGIN_DIR/"

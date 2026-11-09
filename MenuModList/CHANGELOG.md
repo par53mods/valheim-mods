@@ -1,8 +1,9 @@
 # Changelog
 
-## 1.0.1 (2026-11-06)
+## 1.0.1 (2026-11-09)
 
-- New description and README. No gameplay changes.
+- The panel is never taller than half the screen. A longer list scrolls.
+- New description and README.
 
 ## 1.0.0 (2026-11-03)
 

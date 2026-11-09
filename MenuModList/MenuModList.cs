@@ -13,11 +13,16 @@ namespace MenuModList
         private const float PanelWidth = 260f;
         private const float Margin = 20f;
         private const int FontSize = 14;
+
+        // Never taller than half the screen; longer lists scroll.
+        private const float MaxHeightShare = 0.5f;
         private const string GameFont = "AveriaSerifLibre-Bold";
 
         private string text;
         private int lineCount;
         private GUIStyle style;
+        private GUIStyle listStyle;
+        private Vector2 scroll;
         private bool logged;
 
         private void OnGUI()
@@ -45,14 +50,35 @@ namespace MenuModList
                     padding = new RectOffset(12, 12, 10, 10)
                 };
                 style.normal.textColor = Color.white;
+
+                // The same text without its own backing, drawn inside the box when it scrolls.
+                listStyle = new GUIStyle(style);
+                listStyle.normal.background = null;
             }
 
             float scale = Screen.height / ReferenceHeight;
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
 
             float height = style.lineHeight * lineCount + style.padding.vertical;
+            float maxHeight = ReferenceHeight * MaxHeightShare;
             float x = Screen.width / scale - PanelWidth - Margin;
-            GUI.Box(new Rect(x, Margin, PanelWidth, height), text, style);
+            if (height <= maxHeight)
+            {
+                GUI.Box(new Rect(x, Margin, PanelWidth, height), text, style);
+            }
+            else
+            {
+                Rect box = new Rect(x, Margin, PanelWidth, maxHeight);
+                GUI.Box(box, GUIContent.none, style);
+                // The vertical bar takes its width and margin from the view, so the
+                // list is that much narrower, and there is never a horizontal bar.
+                GUIStyle vertical = GUI.skin.verticalScrollbar;
+                float bar = (vertical.fixedWidth > 0f ? vertical.fixedWidth : 16f) + vertical.margin.horizontal;
+                Rect content = new Rect(0f, 0f, PanelWidth - bar, height);
+                scroll = GUI.BeginScrollView(box, scroll, content, false, true, GUIStyle.none, vertical);
+                GUI.Label(content, text, listStyle);
+                GUI.EndScrollView();
+            }
 
             if (!logged)
             {
@@ -78,6 +104,10 @@ namespace MenuModList
                 .Select(p => p.Metadata.Name + " <color=#ffcc66>" + p.Metadata.Version + "</color>")
                 .OrderBy(line => line)
                 .ToArray();
+#if FAKE_MODS
+            // Test builds only: enough made-up entries to need scrolling.
+            plugins = plugins.Concat(Enumerable.Range(1, 40).Select(i => "Test mod " + i + " <color=#ffcc66>1.0.0</color>")).ToArray();
+#endif
 
             string header = "<b>Mods loaded: " + plugins.Length + "</b>\nBepInEx " + typeof(BaseUnityPlugin).Assembly.GetName().Version;
             text = header + "\n" + string.Join("\n", plugins);
