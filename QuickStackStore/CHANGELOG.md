@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.5 (2026-11-09)
+
+- New Keep settings, all off by default, to hold items back from the chests: `PreservePortalMats`, `PreserveBoatMats` (the best boat you've learned and can build), `PreserveBossItems` (only when you carry exactly what an altar takes), `KeepOutpostKit` (workbench, campfire and bed), `KeepCoins`, `KeepSpareAmmo` and a `KeepItems` list such as `Wood:20, Resin:10`.
+- When something is held back, the message says so. Pressing Quick Stack again stacks it too, until you close the inventory.
+
 ## 1.0.4 (2026-11-08)
 
 - Choose which kinds of items Quick Stack sends to chests: `StackMaterials` and `StackRawFood` are on by default, `StackCookedFood` and `StackMeads` are off, so cooked food and meads stay with you.
