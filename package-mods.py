@@ -244,6 +244,36 @@ MODS = [
             "................",
         ],
     },
+    {
+        "name": "ShutupPortal",
+        "folder": "ShutupPortal",
+        "version": "1.0.0",
+        "description": "Silences portals by default: the sound when one activates and the hum while it's active. Both volumes are settings.",
+        "readme": "Portals make a loud sound when they activate and hum while they're active. By default this mod silences both. "
+                  "Only your game changes; other players still hear their portals as usual.\n\n"
+                  "Settings are in `com.parallel53.shutupportal.cfg`: `ActivationVolume` (0) and `HumVolume` (0), each from "
+                  "0 (silent) to 1 (the game's normal volume). A new `HumVolume` applies to portals that load after you change it.",
+        "background": (40, 20, 60),
+        "ink": (200, 150, 255),
+        "icon": [
+            "................",
+            "................",
+            "....#...........",
+            "...##...........",
+            "..###...........",
+            "####....#....#..",
+            "####.....#..#...",
+            "####......##....",
+            "####......##....",
+            "####.....#..#...",
+            "####....#....#..",
+            "..###...........",
+            "...##...........",
+            "....#...........",
+            "................",
+            "................",
+        ],
+    },
 ]
 
 
