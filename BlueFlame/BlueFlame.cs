@@ -4,6 +4,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace BlueFlame
 {
@@ -22,6 +23,7 @@ namespace BlueFlame
         private static ConfigEntry<bool> HeldTorch;
         private static ConfigEntry<bool> Portals;
         private static ConfigEntry<bool> CraftingStations;
+        private static ConfigEntry<bool> TeleportScreen;
         private static BepInEx.Logging.ManualLogSource Log;
 
         private const string BlueTorch = "piece_groundtorch_blue";
@@ -50,6 +52,8 @@ namespace BlueFlame
             CraftingStations = Config.Bind("Blue", "CraftingStations", true,
                 "Forges, smelters, kilns, blast furnaces, ovens, cauldrons and other crafting and cooking stations, " +
                 "including the bursts of fire while you craft. On by default.");
+            TeleportScreen = Config.Bind("Blue", "TeleportScreen", true,
+                "The swirl you see while teleporting. On by default.");
             new Harmony("com.parallel53.blueflame").PatchAll(typeof(BlueFlamePlugin));
         }
 
@@ -90,6 +94,79 @@ namespace BlueFlame
             }
 
             Log.LogInfo("Turned " + changed + " kinds of fire blue");
+        }
+
+        // The teleport swirl's orange is painted into its images, so they are
+        // copied once with their warm colours shifted, and the copies shown.
+        [HarmonyPatch(typeof(Hud), "Awake"), HarmonyPostfix]
+        private static void AfterHudAwake(Hud __instance)
+        {
+            if (!TeleportScreen.Value || __instance.m_teleportingProgress == null)
+            {
+                return;
+            }
+
+            int changed = 0;
+            foreach (Image image in __instance.m_teleportingProgress.GetComponentsInChildren<Image>(true))
+            {
+                if (image.sprite == null)
+                {
+                    continue;
+                }
+
+                if (!blueSprites.TryGetValue(image.sprite, out Sprite blue))
+                {
+                    blue = BlueCopy(image.sprite);
+                    blueSprites[image.sprite] = blue;
+                }
+
+                if (blue != null)
+                {
+                    image.sprite = blue;
+                    changed++;
+                }
+            }
+
+            Log.LogInfo("Turned " + changed + " layers of the teleport swirl blue");
+        }
+
+        private static readonly Dictionary<Sprite, Sprite> blueSprites = new Dictionary<Sprite, Sprite>();
+
+        // Returns null if the image has no warm colours.
+        private static Sprite BlueCopy(Sprite sprite)
+        {
+            Texture2D source = sprite.texture;
+            RenderTexture target = RenderTexture.GetTemporary(source.width, source.height, 0,
+                RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+            RenderTexture previous = RenderTexture.active;
+            Graphics.Blit(source, target);
+            RenderTexture.active = target;
+            var copy = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
+            copy.ReadPixels(new Rect(0, 0, source.width, source.height), 0, 0);
+            RenderTexture.active = previous;
+            RenderTexture.ReleaseTemporary(target);
+
+            Color[] pixels = copy.GetPixels();
+            bool changed = false;
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = Shift(pixels[i], ref changed);
+            }
+
+            if (!changed)
+            {
+                Object.Destroy(copy);
+                return null;
+            }
+
+            copy.SetPixels(pixels);
+            copy.Apply(false, true);
+            copy.name = source.name + "_blue";
+            Sprite blue = Sprite.Create(copy, sprite.rect,
+                new Vector2(sprite.pivot.x / sprite.rect.width, sprite.pivot.y / sprite.rect.height),
+                sprite.pixelsPerUnit, 0, SpriteMeshType.FullRect, sprite.border);
+            blue.name = sprite.name + "_blue";
+            return blue;
         }
 
         private static void ReadBlueTorch(ZNetScene scene)
