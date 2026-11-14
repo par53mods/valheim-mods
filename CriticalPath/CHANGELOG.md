@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6 (2026-11-14)
+
+- Suggests extensions that a crafting station near you is still missing, if you know how to build them, such as the one a forge needs for its next level. Each says which level it brings the station to.
+
 ## 0.1.5 (2026-11-09)
 
 - Description and readme wording: they no longer promise it never suggests anything you don't need, or the most survivability for the least time. The armor target is described as a level the mod sets for each boss. No gameplay changes.

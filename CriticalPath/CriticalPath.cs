@@ -13,7 +13,7 @@ namespace CriticalPath
 {
     // Shows what to make next on the inventory screen, worked out from what this
     // character has discovered, so a character mid-game starts in the right place.
-    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.5")]
+    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.6")]
     public class CriticalPathPlugin : BaseUnityPlugin
     {
         private const string BuiltKey = "parallel53.criticalpath.built";
@@ -527,7 +527,7 @@ namespace CriticalPath
 
             Dictionary<string, int> stock = Stock(player, nearby);
             BossGoal goal = NextBoss(player, stock);
-            List<Suggestion> suggestions = PathRules.Choose(Candidates(player, stock, goal), suggestionCount.Value);
+            List<Suggestion> suggestions = PathRules.Choose(Candidates(player, stock, goal, nearby), suggestionCount.Value);
             if (goal != null && goal.Ready && !goal.Located)
             {
                 suggestions.Insert(0, new Suggestion { Id = "find:" + goal.Name, Name = "Find " + goal.Name, Reason = goal.Find, Detail = "" });
@@ -783,7 +783,7 @@ namespace CriticalPath
         // Goals are tools that open up a material, food, and the armor for the next
         // boss. Each shows as its first missing step, so stations only appear when
         // a goal needs them.
-        private static List<Suggestion> Candidates(Player player, Dictionary<string, int> stock, BossGoal goal)
+        private static List<Suggestion> Candidates(Player player, Dictionary<string, int> stock, BossGoal goal, List<Piece> nearby)
         {
             List<KeyValuePair<string, string>> unlocks = Unlocks(player);
             HashSet<string> latest = PathRules.LatestBatch(unlocks);
@@ -844,6 +844,7 @@ namespace CriticalPath
             }
 
             suggestions.AddRange(Comfort(plan.Pieces.Values.Where(piece => player.IsRecipeKnown(piece.m_name)).ToList(), built));
+            suggestions.AddRange(StationUpgrades(player, plan, nearby, stock));
             suggestions.AddRange(plan.Recipes.Values
                 .Where(recipe => GearTypes.Contains(recipe.m_item.m_itemData.m_shared.m_itemType) &&
                     player.IsRecipeKnown(ItemName(recipe)) && !player.IsMaterialKnown(ItemName(recipe)))
@@ -1610,6 +1611,70 @@ namespace CriticalPath
                     Detail = costs.Length > 0 ? "Build: " + costs : ""
                 };
             });
+        }
+
+        // For each kind of crafting station nearby, the extensions you know how to
+        // build that its highest-level copy doesn't have yet. Each one raises it a level.
+        private static IEnumerable<Suggestion> StationUpgrades(Player player, Plan plan, List<Piece> nearby,
+            Dictionary<string, int> stock)
+        {
+            IEnumerable<CraftingStation> stations = nearby
+                .Select(piece => piece.GetComponent<CraftingStation>())
+                .Where(station => station != null)
+                .GroupBy(station => station.m_name)
+                .Select(sameKind => sameKind.OrderByDescending(station => station.GetLevel()).First());
+
+            foreach (CraftingStation station in stations)
+            {
+                // Asking for the level also refreshes the station's list of extensions.
+                int level = station.GetLevel();
+                HashSet<string> attached = new HashSet<string>(StationExtensions(station)
+                    .Where(extension => extension != null)
+                    .Select(extension => extension.GetComponent<Piece>())
+                    .Where(piece => piece != null)
+                    .Select(piece => piece.m_name));
+
+                List<Piece> missing = plan.Pieces.Values
+                    .Where(piece =>
+                    {
+                        StationExtension extension = piece.GetComponent<StationExtension>();
+                        return extension != null && extension.m_craftingStation != null &&
+                            extension.m_craftingStation.m_name == station.m_name &&
+                            !attached.Contains(piece.m_name) && player.IsRecipeKnown(piece.m_name);
+                    })
+                    .OrderBy(piece => Materials(piece.m_resources, 1))
+                    .ToList();
+
+                string stationName = Localized(station.m_name);
+                foreach (Piece piece in missing)
+                {
+                    string costs = Costs(piece.m_resources);
+                    string at = piece.m_craftingStation != null ? " at " + Localized(piece.m_craftingStation.m_name) : "";
+                    yield return new Suggestion
+                    {
+                        Id = piece.m_name,
+                        For = piece.m_name,
+                        Name = Localized(piece.m_name),
+                        Tier = Tier.Station,
+                        Reason = "Raises your " + stationName + " from level " + level + " to " + (level + 1) +
+                            ". Build it next to the " + stationName + ".",
+                        Detail = costs.Length > 0 ? "Build" + at + ": " + costs : "",
+                        Ready = PathRules.HasAll(piece.m_resources
+                            .Where(requirement => requirement.m_resItem != null && requirement.m_amount > 0)
+                            .Select(requirement => new KeyValuePair<string, int>(
+                                requirement.m_resItem.m_itemData.m_shared.m_name, requirement.m_amount)), stock)
+                    };
+                }
+            }
+        }
+
+        private static readonly AccessTools.FieldRef<CraftingStation, List<StationExtension>> AttachedExtensions =
+            AccessTools.FieldRefAccess<CraftingStation, List<StationExtension>>("m_attachedExtensions");
+
+        // The game keeps this list up to date every couple of seconds.
+        private static List<StationExtension> StationExtensions(CraftingStation station)
+        {
+            return AttachedExtensions(station) ?? new List<StationExtension>();
         }
 
         // What the character carries plus what is in chests close enough to fetch.

@@ -13,6 +13,9 @@ namespace CriticalPath
         // Meads the next boss fight calls for.
         Boss,
         Armor,
+
+        // An extension a nearby crafting station is still missing.
+        Station,
         Comfort,
         Gear
     }

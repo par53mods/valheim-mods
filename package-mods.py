@@ -99,9 +99,9 @@ MODS = [
     {
         "name": "CriticalPath",
         "folder": "CriticalPath",
-        "version": "0.1.5",
-        "description": "A pocket strategist for the inventory screen: suggests the next tool, food, armor, mead, weapon or offering to work towards for the next boss. Finding the boss is still up to you.",
-        "readme": "Shows a panel under the inventory suggesting what to work on next:\n\n- Tools that open up new materials, such as the bronze axe for fine wood.\n- New food worth making, labelled health, stamina or eitr.\n- For the next boss: armor up to a level the mod sets for that boss, the resistance it calls for (mead or gear), weapons or arrows that hit its weaknesses, a shield where it helps, and the summoning offering once your armor is up to it.\n- Once you're ready, it reminds you to find the boss's altar and says which kind of Vegvisir to look for. It never marks the altar or reveals where it is.\n\nStations, upgrades and materials appear only as steps towards a goal. It reads your character's progress, so it works mid-game.\n\nSettings are in `com.parallel53.criticalpath.cfg`: `Suggestions` and `Notify`.",
+        "version": "0.1.6",
+        "description": "A pocket strategist for the inventory screen: suggests the next tool, food, armor, mead, weapon, station upgrade or offering to work towards for the next boss. Finding the boss is still up to you.",
+        "readme": "Shows a panel under the inventory suggesting what to work on next:\n\n- Tools that open up new materials, such as the bronze axe for fine wood.\n- New food worth making, labelled health, stamina or eitr.\n- For the next boss: armor up to a level the mod sets for that boss, the resistance it calls for (mead or gear), weapons or arrows that hit its weaknesses, a shield where it helps, and the summoning offering once your armor is up to it.\n- Extensions that a crafting station near you is still missing, such as the last one a forge needs for its next level, if you know how to build them.\n- Once you're ready, it reminds you to find the boss's altar and says which kind of Vegvisir to look for. It never marks the altar or reveals where it is.\n\nOther stations, upgrades and materials appear only as steps towards a goal. It reads your character's progress, so it works mid-game.\n\nSettings are in `com.parallel53.criticalpath.cfg`: `Suggestions` and `Notify`.",
         "background": (96, 30, 30),
         "ink": (255, 190, 90),
         "icon": [
