@@ -274,6 +274,40 @@ MODS = [
             "................",
         ],
     },
+    {
+        "name": "BlueFlame",
+        "folder": "BlueFlame",
+        "version": "1.0.0",
+        "description": "Campfires, hearths, torches, braziers, portals and crafting stations burn blue like the Standing Blue-burning Iron Torch by default, blue light included.",
+        "readme": "By default, fires burn blue like the Standing Blue-burning Iron Torch, and their light turns the same blue. "
+                  "Flames that use the game's colour-graded fire take the blue torch's own colours; other flames, sparks and glows "
+                  "are tinted blue. Only your game changes; other players see their fires as usual.\n\n"
+                  "Settings are in `com.parallel53.blueflame.cfg`, all on by default: `Fires` (campfires, hearths, bonfires, "
+                  "standing and wall torches, braziers and other fires you refuel), `HeldTorch`, `Portals` and `CraftingStations` "
+                  "(forges, smelters, kilns, blast furnaces, ovens, cauldrons and other crafting and cooking stations). "
+                  "The flashes and bursts of fire when you add fuel, craft or smelt turn blue as well; fireworks keep their colours. Restart the game after changing a setting. "
+                  "Fire arrows, burning, enemy fire and lava are left alone.",
+        "background": (15, 25, 60),
+        "ink": (110, 190, 255),
+        "icon": [
+            "................",
+            ".......#........",
+            "......##........",
+            "......###.......",
+            ".....####..#....",
+            "....#####.##....",
+            "...##########...",
+            "...####..####...",
+            "..####....####..",
+            "..###......###..",
+            "..###......###..",
+            "...###....###...",
+            "....########....",
+            "......####......",
+            "................",
+            "................",
+        ],
+    },
 ]
 
 
