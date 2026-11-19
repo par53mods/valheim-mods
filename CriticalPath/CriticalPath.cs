@@ -49,14 +49,24 @@ namespace CriticalPath
         // Recipes can't show what a tool lets you gather, so that link is listed here.
         // Each one is a goal. Silver can't be found without Bonemass's Wishbone, so
         // the iron pickaxe only matters after that fight.
+        // Each says what the tool needs to break and, where the game has one, an
+        // easier way to come by a little without it. Tool tiers are the game's own.
+        // A later biome's gate opens once the boss before it is beaten.
         private static readonly Gate[] Gates =
         {
             new Gate("AxeFlint", "RoundLog", "Chop pine trees", ""),
             new Gate("PickaxeAntler", "CopperOre", "Mine copper deposits in the Black Forest", ""),
-            new Gate("PickaxeAntler", "TinOre", "Mine tin on Black Forest shores", ""),
-            new Gate("AxeBronze", "FineWood", "Chop birch and oak trees", ""),
-            new Gate("CryptKey", "WitheredBone", "Search Sunken Crypts in the Swamp", ""),
-            new Gate("PickaxeIron", "SilverOre", "Find silver in the Mountains with the Wishbone", "Bonemass")
+            new Gate("PickaxeAntler", "TinOre", "Mine tin on Black Forest shores", "", "or pick up loose tin there"),
+            new Gate("AxeBronze", "FineWood", "Chop birch and oak trees", "", "or break shipwrecks and old furniture"),
+            new Gate("CryptKey", "WitheredBone", "Search Sunken Crypts in the Swamp", "", "or loot other Swamp chests"),
+            new Gate("CryptKey", "IronScrap", "Loot chests and break mud piles and rusted gates in Swamp Sunken Crypts", "",
+                "or kill {BlobElite}"),
+            new Gate("PickaxeIron", "SilverOre", "Find silver in the Mountains with the Wishbone", "Bonemass"),
+            new Gate("PickaxeIron", "Obsidian", "Mine obsidian in the Mountains", "Bonemass", "or pick up loose obsidian in mountain caves"),
+            new Gate("AxeBlackMetal", "YggdrasilWood", "Chop Yggdrasil shoots in the Mistlands", "GoblinKing"),
+            new Gate("PickaxeBlackMetal", "BlackMarble", "Mine giant remains in the Mistlands", "GoblinKing", "or kill {Dverger}"),
+            new Gate("PickaxeBlackMetal", "FlametalOreNew", "Mine meteorites in the Ashlands", "SeekerQueen", "or loot charred fortress chests"),
+            new Gate("BombDynamite", "GoldOre", "Blow up gold veins in the Deep North", "Fader")
         };
 
         // In order. Armor is the total worn that is enough to take the boss on, set
@@ -129,6 +139,195 @@ namespace CriticalPath
             { "BellFragment", "Destroy charred altars in the Ashlands" },
         };
 
+        // The key steps through a boss's biome, in order, and where to find what
+        // they need, all taken from the game's own files. A step is an item or a
+        // piece; one already made or built is skipped.
+        private static readonly Journey[] Journeys =
+        {
+            new Journey("Eikthyr", "Meadows",
+                new[]
+                {
+                    new Step("piece_workbench", "Lets you craft tools and build a shelter."),
+                    new Step("bed", "Sleep in it to set where you respawn."),
+                    new Step("AxeFlint", "Chops trees faster than the stone axe.")
+                },
+                new Dictionary<string, string>
+                {
+                    { "Flint", "Pick up flint in the Meadows" },
+                    { "DeerHide", "Dropped by {Deer} in the Meadows" },
+                    { "LeatherScraps", "Dropped by {Boar} in the Meadows" },
+                    { "Raspberry", "Pick raspberries in the Meadows" },
+                    { "Mushroom", "Pick mushrooms" },
+                    { "Dandelion", "Pick dandelions in the Meadows" },
+                    { "QueenBee", "Break beehives" },
+                    { "Resin", "Chop trees" }
+                }),
+            new Journey("gd_king", "Black Forest",
+                new[]
+                {
+                    new Step("forge", "Crafts bronze tools, weapons and armor."),
+                    new Step("smelter", "Smelts copper and tin ore."),
+                    new Step("charcoal_kiln", "Makes coal from wood for the smelter."),
+                    new Step("Bronze", "Bronze tools, weapons, armor and the nails for a Karve."),
+                    new Step("Karve", "A ship to reach other islands, with room for cargo.")
+                },
+                new Dictionary<string, string>
+                {
+                    { "SurtlingCore", "Take them from surtling core stands, or dropped by {Surtling}" },
+                    { "Blueberries", "Pick blueberries in the Black Forest" },
+                    { "CarrotSeeds", "Pick carrot seeds in the Black Forest" },
+                    { "GreydwarfEye", "Dropped by {Greydwarf}" },
+                    { "TrollHide", "Dropped by {Troll}" },
+                    { "BoneFragments", "Dropped by {Skeleton}, or search remains in burial chambers" },
+                    { "Thistle", "Pick thistles in the Black Forest" }
+                }),
+            new Journey("Bonemass", "Swamp",
+                new[]
+                {
+                    new Step("Iron", "Iron tools, weapons and armor, and the nails for a longship."),
+                    new Step("VikingShip", "A larger ship with more room for cargo.")
+                },
+                new Dictionary<string, string>
+                {
+                    { "ElderBark", "Chop ancient trees in the Swamp" },
+                    { "Chain", "Dropped by {Wraith}, or loot Sunken Crypt chests" },
+                    { "Guck", "Break guck sacks in the Swamp, or dropped by {Abomination}" },
+                    { "Root", "Dropped by {Abomination}" },
+                    { "Bloodbag", "Dropped by {Leech}" },
+                    { "Entrails", "Dropped by {Draugr}" },
+                    { "Ooze", "Dropped by {Blob}" },
+                    { "TurnipSeeds", "Pick turnip seeds in the Swamp" }
+                }),
+            new Journey("Dragon", "Mountains",
+                new[]
+                {
+                    new Step("Silver", "Wolf armor and silver weapons take silver."),
+                    new Step("CapeWolf", "Adds frost resistance against the Mountains' cold.")
+                },
+                new Dictionary<string, string>
+                {
+                    { "Crystal", "Pick crystals in mountain caves, or dropped by {StoneGolem}" },
+                    { "FreezeGland", "Dropped by {Hatchling}" },
+                    { "WolfPelt", "Dropped by {Wolf}" },
+                    { "WolfFang", "Dropped by {Wolf}" },
+                    { "TrophyHatchling", "Dropped by {Hatchling}" },
+                    { "OnionSeeds", "Pick onion seeds in the Mountains" }
+                }),
+            new Journey("GoblinKing", "Plains",
+                new[]
+                {
+                    new Step("piece_artisanstation", "Crafts the blast furnace, spinning wheel and windmill."),
+                    new Step("blastfurnace", "Smelts black metal scrap."),
+                    new Step("BlackMetal", "Black metal weapons and the black metal axe take black metal."),
+                    new Step("piece_spinningwheel", "Spins flax into linen thread for padded armor."),
+                    new Step("windmill", "Grinds barley into flour."),
+                    new Step("AxeBlackMetal", "Chops Yggdrasil shoots, which the Mistlands needs.")
+                },
+                new Dictionary<string, string>
+                {
+                    { "BlackMetalScrap", "Dropped by {Goblin} and other fulings in the Plains" },
+                    { "Flax", "Pick wild flax in the Plains" },
+                    { "Barley", "Pick wild barley in the Plains" },
+                    { "Needle", "Dropped by {Deathsquito}" },
+                    { "LoxPelt", "Dropped by {Lox}" },
+                    { "LoxMeat", "Dropped by {Lox}" },
+                    { "Tar", "Pick it from tar pits, or dropped by {BlobTar}" },
+                    { "Cloudberry", "Pick cloudberries in the Plains" }
+                }),
+            new Journey("SeekerQueen", "Mistlands",
+                new[]
+                {
+                    new Step("Demister", "Clears the mist around you."),
+                    new Step("blackforge", "Crafts carapace armor and Mistlands weapons."),
+                    new Step("piece_sapcollector", "Collects sap, which the Eitr refinery burns."),
+                    new Step("eitrrefinery", "Makes Eitr from soft tissue."),
+                    new Step("piece_magetable", "Crafts the Sealbreaker for the Queen, the feather cape and magic staffs."),
+                    new Step("CapeFeather", "Slows your fall so you take no fall damage on the Mistlands cliffs.")
+                },
+                new Dictionary<string, string>
+                {
+                    { "DvergrNeedle", "Break long Dvergr crates in the Mistlands" },
+                    { "Softtissue", "Kill Dvergr or break Dvergr crates in the Mistlands" },
+                    { "BlackCore", "Take them from black core stands in the Mistlands" },
+                    { "RoyalJelly", "Kill seeker broods in the Mistlands" },
+                    { "BugMeat", "Kill seekers in the Mistlands" },
+                    { "Carapace", "Kill seekers in the Mistlands" },
+                    { "Mandible", "Kill seeker soldiers in the Mistlands" },
+                    { "GiantBloodSack", "Kill ticks in the Mistlands" },
+                    { "ScaleHide", "Hunt hares in the Mistlands" },
+                    { "MushroomMagecap", "Pick magecaps in the Mistlands" },
+                    { "MushroomJotunPuffs", "Pick Jotun puffs in the Mistlands" },
+                    { "Feathers", "Kill birds or chop trees" },
+                    { "Wisp", "Pick wisps drawn to a {piece_wisplure}" }
+                }),
+            new Journey("Fader", "Ashlands",
+                new[]
+                {
+                    new Step("VikingShip_Ashlands", "Its hull takes no damage from the Ashlands sea."),
+                    new Step("blackforge_ext2_vise", "Flametal armor and shields need the Black forge at level 3."),
+                    new Step("FlametalNew", "Flametal armor and shields and the next Black forge extensions take flametal."),
+                    new Step("CapeAsh", "Adds 12 armor. The feather cape adds 1 and makes you very weak to fire.")
+                },
+                new Dictionary<string, string>
+                {
+                    { "Blackwood", "Chop trees in the Ashlands" },
+                    { "CharcoalResin", "Chop trees in the Ashlands" },
+                    { "Grausten", "Break stone ruins in the Ashlands" },
+                    { "CharredBone", "Dropped by {Charred_Melee} and other Charred in the Ashlands" },
+                    { "AskHide", "Dropped by {Asksvin} in the Ashlands" },
+                    { "AsksvinMeat", "Dropped by {Asksvin} in the Ashlands" },
+                    { "TrophyAsksvin", "Dropped by {Asksvin} in the Ashlands" },
+                    { "MorgenSinew", "Dropped by {Morgen} in the Ashlands" },
+                    { "MorgenHeart", "Dropped by {Morgen} in the Ashlands" },
+                    { "CelestialFeather", "Dropped by {FallenValkyrie} in the Ashlands, or loot charred fortress chests" },
+                    { "VoltureMeat", "Dropped by {Volture} in the Ashlands" },
+                    { "VoltureEgg", "Dropped by {Volture}, or pick them up in the Ashlands" },
+                    { "SulfurStone", "Pick sulfur rocks, or dropped by {BlobLava} in the Ashlands" },
+                    { "ProustitePowder", "Dropped by {BlobLava}, or break unstable lava rocks in the Ashlands" },
+                    { "BoneMawSerpentMeat", "Dropped by {BonemawSerpent} in the Ashlands sea" },
+                    { "BonemawSerpentTooth", "Dropped by {BonemawSerpent} in the Ashlands sea" },
+                    { "Vineberry", "Pick vineberries in the Ashlands" },
+                    { "Fiddleheadfern", "Pick fiddleheads in the Ashlands" },
+                    { "MushroomSmokePuff", "Pick smoke puffs in the Ashlands" },
+                    { "GemstoneRed", "Loot charred fortress chests in the Ashlands" },
+                    { "GemstoneGreen", "Loot charred fortress chests in the Ashlands" },
+                    { "GemstoneBlue", "Loot charred fortress chests in the Ashlands" }
+                }),
+            new Journey("FrozenKing", "Deep North",
+                new[]
+                {
+                    new Step("Gold", "Deep North armor and the last Black forge and cauldron extensions take gold."),
+                    new Step("blackforge_ext3_metalcutter", "Deep North armor needs the Black forge at level 4."),
+                    new Step("CapeDeepNorth", "Adds 12 armor and frost resistance.")
+                },
+                new Dictionary<string, string>
+                {
+                    { "Frostwood", "Chop fir trees and old logs in the Deep North" },
+                    { "FaderEmber", "Pick Fader embers drawn to a {piece_FaderEmbers}" },
+                    { "MooseHide", "Dropped by {Moose} in the Deep North" },
+                    { "MooseSinew", "Dropped by {Moose} in the Deep North" },
+                    { "TrophyMoose", "Dropped by {Moose} in the Deep North" },
+                    { "SealHide", "Dropped by {Seal} in the Deep North" },
+                    { "SealBlubber", "Dropped by {Seal} in the Deep North" },
+                    { "ElakingHairBundle", "Dropped by {Elaking} in the Deep North" },
+                    { "MoldKeys", "Dropped by {Elaking} and {ElakingMole} in the Deep North" },
+                    { "Leatherstraps", "Dropped by {JotunWarrior} in the Deep North" },
+                    { "MoldArmorGoldHelmet", "Dropped by {JotunWarrior} in the Deep North" },
+                    { "MoldArmorGoldChest", "Dropped by {JotunWarrior} in the Deep North" },
+                    { "MoldArmorGoldLegs", "Dropped by {JotunWarrior} in the Deep North" },
+                    { "MoldArmorMediumHelmet", "Dropped by {JotunWarrior} in the Deep North" },
+                    { "MoldArmormediumChest", "Dropped by {JotunWarrior} in the Deep North" },
+                    { "MoldArmorMediumLegs", "Dropped by {JotunWarrior} in the Deep North" },
+                    { "NornThread", "Dropped by {JotunWitch} in the Deep North" },
+                    { "MoldArmorMageHelmet", "Dropped by {JotunWitch} in the Deep North" },
+                    { "MoldArmorMageChest", "Dropped by {JotunWitch} in the Deep North" },
+                    { "MoldArmorMageLegs", "Dropped by {JotunWitch} in the Deep North" },
+                    { "FrostCore", "Dropped by {Frysling}, or take them from frost core hangers in the Deep North" },
+                    { "Ice", "Break ice in the Deep North" },
+                    { "Lingonberry", "Pick lingonberries in the Deep North" }
+                })
+        };
+
         // Whether a shield is worth carrying into the fight.
         private enum ShieldUse
         {
@@ -175,23 +374,16 @@ namespace CriticalPath
             ItemDrop.ItemData.ItemType.Legs
         };
 
-        private static readonly HashSet<ItemDrop.ItemData.ItemType> GearTypes =
-            new HashSet<ItemDrop.ItemData.ItemType>
-            {
-                ItemDrop.ItemData.ItemType.OneHandedWeapon,
-                ItemDrop.ItemData.ItemType.TwoHandedWeapon,
-                ItemDrop.ItemData.ItemType.TwoHandedWeaponLeft,
-                ItemDrop.ItemData.ItemType.Bow,
-                ItemDrop.ItemData.ItemType.Shield,
-                ItemDrop.ItemData.ItemType.Shoulder,
-                ItemDrop.ItemData.ItemType.Tool
-            };
-
         private static readonly HashSet<string> MissingItems = new HashSet<string>();
 
         private static ManualLogSource log;
         private static ConfigEntry<int> suggestionCount;
         private static ConfigEntry<bool> notify;
+        private static ConfigEntry<bool> materialUses;
+        private const int MaxUses = 5;
+
+        // What the newest material picked up is used for, shown under the suggestions.
+        private static string lastMaterial = "";
         private static bool dirty = true;
         private static string lastCause = "";
         private static Player seenPlayer;
@@ -210,12 +402,16 @@ namespace CriticalPath
             public readonly string Where;
             public readonly string AfterBoss;
 
-            public Gate(string tool, string target, string where, string afterBoss)
+            // Another way to come by some, such as shipwrecks for fine wood.
+            public readonly string Or;
+
+            public Gate(string tool, string target, string where, string afterBoss, string or = "")
             {
                 Tool = tool;
                 Target = target;
                 Where = where;
                 AfterBoss = afterBoss;
+                Or = or;
             }
         }
 
@@ -257,6 +453,78 @@ namespace CriticalPath
             }
         }
 
+        private class Journey
+        {
+            public readonly string Boss;
+            public readonly string Biome;
+            public readonly Step[] Steps;
+
+            // Item prefab to where to find it.
+            public readonly Dictionary<string, string> Finds;
+
+            public Journey(string boss, string biome, Step[] steps, Dictionary<string, string> finds)
+            {
+                Boss = boss;
+                Biome = biome;
+                Steps = steps;
+                Finds = finds;
+            }
+
+            // Where to find an item, by the item's name.
+            public string Where(string item)
+            {
+                foreach (KeyValuePair<string, string> find in Finds)
+                {
+                    ItemDrop.ItemData.SharedData shared = Shared(find.Key);
+                    if (shared != null && shared.m_name == item)
+                    {
+                        return Names(find.Value);
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        // Fills in {prefab} with the game's own name for a creature or piece.
+        private static string Names(string text)
+        {
+            return System.Text.RegularExpressions.Regex.Replace(text, @"\{(\w+)\}", match =>
+            {
+                GameObject prefab = ZNetScene.instance.GetPrefab(match.Groups[1].Value);
+                Character character = prefab != null ? prefab.GetComponent<Character>() : null;
+                Piece piece = prefab != null ? prefab.GetComponent<Piece>() : null;
+                if (character != null)
+                {
+                    return Localized(character.m_name);
+                }
+
+                if (piece != null)
+                {
+                    return Localized(piece.m_name);
+                }
+
+                if (MissingItems.Add("name:" + match.Groups[1].Value))
+                {
+                    log.LogWarning("No creature or piece named " + match.Groups[1].Value);
+                }
+
+                return match.Groups[1].Value;
+            });
+        }
+
+        private class Step
+        {
+            public readonly string Prefab;
+            public readonly string Reason;
+
+            public Step(string prefab, string reason)
+            {
+                Prefab = prefab;
+                Reason = reason;
+            }
+        }
+
         private class Need
         {
             public readonly string Prefab;
@@ -283,6 +551,9 @@ namespace CriticalPath
         private class BossGoal
         {
             public string Name;
+
+            // The steps through its biome, if listed.
+            public Journey Journey;
             public string Hint;
             public float Armor;
             public float TargetArmor;
@@ -334,6 +605,8 @@ namespace CriticalPath
                     new AcceptableValueRange<int>(1, 6)));
             notify = Config.Bind("General", "Notify", true,
                 "Show a top-left message when the top suggestion changes.");
+            materialUses = Config.Bind("General", "MaterialUses", true,
+                "When you pick up a material for the first time, show what it is used for.");
 
             new Harmony("com.parallel53.criticalpath").PatchAll(typeof(CriticalPathPlugin));
         }
@@ -610,7 +883,7 @@ namespace CriticalPath
 
             if (suggestions.Count == 0 && (goal == null || !goal.Ready))
             {
-                return text.Append("\nNothing new to make right now. Explore further.").ToString();
+                text.Append("\nNothing new to make right now. Explore further.");
             }
 
             foreach (Suggestion suggestion in suggestions)
@@ -621,6 +894,11 @@ namespace CriticalPath
                 {
                     text.Append("\n").Append(suggestion.Detail);
                 }
+            }
+
+            if (lastMaterial.Length > 0)
+            {
+                text.Append("\n\n").Append(lastMaterial);
             }
 
             return text.ToString();
@@ -645,6 +923,7 @@ namespace CriticalPath
                     return new BossGoal
                     {
                         Name = Localized(character.m_name),
+                        Journey = Journeys.FirstOrDefault(journey => journey.Boss == boss.Prefab),
                         Hint = boss.Hint,
                         Missing = boss.Bring
                             .Select(need => new { need, item = Shared(need.Prefab) })
@@ -831,9 +1110,16 @@ namespace CriticalPath
                 goal.Shooting = false;
             }
 
+            Journey journey = goal != null ? goal.Journey : null;
             List<Suggestion> suggestions = new List<Suggestion>();
             suggestions.AddRange(GatherGoals(player, plan));
-            suggestions.AddRange(FoodGoals(player, plan, stock));
+            if (journey != null)
+            {
+                suggestions.AddRange(JourneyGoals(player, plan, stock, built, journey));
+            }
+
+            suggestions.AddRange(FoodGoals(player, plan, stock, journey));
+            suggestions.AddRange(MeadGoals(plan, stock));
             if (goal != null && !goal.Ready)
             {
                 suggestions.AddRange(ArmorGoals(player, plan, goal.TargetArmor - goal.Armor));
@@ -860,11 +1146,7 @@ namespace CriticalPath
             }
 
             suggestions.AddRange(Comfort(plan.Pieces.Values.Where(piece => player.IsRecipeKnown(piece.m_name)).ToList(), built));
-            suggestions.AddRange(StationUpgrades(player, plan, nearby, stock));
-            suggestions.AddRange(plan.Recipes.Values
-                .Where(recipe => GearTypes.Contains(recipe.m_item.m_itemData.m_shared.m_itemType) &&
-                    player.IsRecipeKnown(ItemName(recipe)) && !player.IsMaterialKnown(ItemName(recipe)))
-                .Select(recipe => plan.Describe(ItemName(recipe), Tier.Gear, "New gear.")));
+            suggestions.AddRange(StationUpgrades(player, plan, nearby, stock, built));
 
             foreach (Suggestion suggestion in suggestions)
             {
@@ -909,9 +1191,137 @@ namespace CriticalPath
             }
         }
 
+        // The next steps through the biome not taken yet, in order, each as its
+        // first step or as what is still to be found for it.
+        private static IEnumerable<Suggestion> JourneyGoals(Player player, Plan plan, Dictionary<string, int> stock,
+            HashSet<string> built, Journey journey)
+        {
+            for (int index = 0; index < journey.Steps.Length; index++)
+            {
+                Step step = journey.Steps[index];
+                string id = StepId(step.Prefab);
+                if (id == null || Done(player, id, stock, built))
+                {
+                    continue;
+                }
+
+                string reason = step.Reason + " A key step in the " + journey.Biome + ".";
+                Suggestion suggestion = plan.ForGoal(id, id, plan.Planner.Make(id), Tier.Journey, Localized(id), reason) ??
+                    FindFor(plan, journey, id, Localized(id), Tier.Journey);
+                if (suggestion == null)
+                {
+                    continue;
+                }
+
+                suggestion.Value = -index;
+                yield return suggestion;
+            }
+        }
+
+        // An item's or piece's name, as the planner knows it.
+        private static string StepId(string prefab)
+        {
+            GameObject item = ObjectDB.instance.GetItemPrefab(prefab);
+            if (item != null)
+            {
+                return item.GetComponent<ItemDrop>().m_itemData.m_shared.m_name;
+            }
+
+            GameObject piece = ZNetScene.instance.GetPrefab(prefab);
+            if (piece != null && piece.GetComponent<Piece>() != null)
+            {
+                return piece.GetComponent<Piece>().m_name;
+            }
+
+            if (MissingItems.Add(prefab))
+            {
+                log.LogWarning("No item or piece named " + prefab);
+            }
+
+            return null;
+        }
+
+        // Made once or on hand; for a piece, built, or for a crafting station,
+        // used, since one built before the mod may not have been seen.
+        private static bool Done(Player player, string id, Dictionary<string, int> stock, HashSet<string> built)
+        {
+            if (built.Contains(id) || player.IsMaterialKnown(id) || (stock.TryGetValue(id, out int have) && have > 0))
+            {
+                return true;
+            }
+
+            CraftingStation station = HammerPieces().Where(piece => piece.m_name == id)
+                .Select(piece => piece.GetComponent<CraftingStation>()).FirstOrDefault(found => found != null);
+            return station != null && KnownStations(player).ContainsKey(station.m_name);
+        }
+
+        // What is still to be found before a goal can be made, when the biome's
+        // list says where to look. Null otherwise.
+        private static Suggestion FindFor(Plan plan, Journey journey, string goal, string goalName, Tier tier)
+        {
+            string blocker = plan.Planner.Blocker(goal);
+            string where = blocker != null ? WhereToFind(journey, blocker) : null;
+            if (where == null)
+            {
+                if (blocker != null && MissingItems.Add("blocked:" + goal))
+                {
+                    log.LogInfo(Localized(goalName) + " waits on " + Localized(blocker));
+                }
+
+                return null;
+            }
+
+            return new Suggestion
+            {
+                Id = "find:" + blocker,
+                For = goal,
+                Name = "Find " + Localized(blocker),
+                Tier = tier,
+                Reason = where + ". Needed for " + goalName + ".",
+                Detail = ""
+            };
+        }
+
+        // Where to look, from this biome's list or an earlier one's, and failing
+        // that, the trader who sells it. Later biomes are left out.
+        private static string WhereToFind(Journey journey, string item)
+        {
+            int last = journey != null ? System.Array.IndexOf(Journeys, journey) : -1;
+            for (int index = last; index >= 0; index--)
+            {
+                string where = Journeys[index].Where(item);
+                if (where != null)
+                {
+                    return where;
+                }
+            }
+
+            if (traderItems == null)
+            {
+                traderItems = new Dictionary<string, string>();
+                foreach (GameObject prefab in ZNetScene.instance.m_prefabs)
+                {
+                    Trader trader = prefab != null ? prefab.GetComponent<Trader>() : null;
+                    foreach (Trader.TradeItem trade in trader != null ? trader.m_items : new List<Trader.TradeItem>())
+                    {
+                        if (trade.m_prefab != null && !traderItems.ContainsKey(trade.m_prefab.m_itemData.m_shared.m_name))
+                        {
+                            traderItems[trade.m_prefab.m_itemData.m_shared.m_name] = Localized(trader.m_name);
+                        }
+                    }
+                }
+            }
+
+            return traderItems.TryGetValue(item, out string seller) ? "Buy it from " + seller : null;
+        }
+
+        // Item name to the trader who sells it, read once.
+        private static Dictionary<string, string> traderItems;
+
         // The single best food not made yet, or the first step towards it, and only
         // if it beats the third-best food already known, since three are eaten at once.
-        private static IEnumerable<Suggestion> FoodGoals(Player player, Plan plan, Dictionary<string, int> stock)
+        // One that waits on an ingredient still to be found says where to look.
+        private static IEnumerable<Suggestion> FoodGoals(Player player, Plan plan, Dictionary<string, int> stock, Journey journey)
         {
             Dictionary<string, ItemDrop.ItemData.SharedData> items = ItemsByName();
             bool magic = stock.Any(pair => pair.Value > 0 && items.ContainsKey(pair.Key) && UsesEitr(items[pair.Key]));
@@ -940,7 +1350,8 @@ namespace CriticalPath
                     : PathRules.FoodGain(shared.m_food, shared.m_foodStamina, shared.m_foodEitr, 0f, 0f, 0f, magic);
                 Suggestion suggestion = plan.ForGoal(shared.m_name, shared.m_name, step, Tier.Food,
                     Localized(shared.m_name) + " (" + gain + ")",
-                    "New food (" + gain + ")." + (ready ? " You have the ingredients." : ""));
+                    "New food (" + gain + ")." + (ready ? " You have the ingredients." : "")) ??
+                    FindFor(plan, journey, shared.m_name, Localized(shared.m_name) + " (" + gain + ")", Tier.Food);
                 if (suggestion == null)
                 {
                     continue;
@@ -958,6 +1369,52 @@ namespace CriticalPath
             {
                 yield return best;
             }
+        }
+
+        // The strongest healing and stamina meads you can make, when you carry
+        // none as good, since they are what gets you through a hard fight.
+        private static IEnumerable<Suggestion> MeadGoals(Plan plan, Dictionary<string, int> stock)
+        {
+            Dictionary<string, ItemDrop.ItemData.SharedData> items = ItemsByName();
+            foreach (bool health in new[] { true, false })
+            {
+                ItemDrop.ItemData.SharedData best = items.Values
+                    .Where(shared => shared.m_food <= 0f && MeadValue(shared, health) > 0f &&
+                        plan.Planner.Makings.ContainsKey(shared.m_name) && plan.Planner.Make(shared.m_name) != null)
+                    .OrderByDescending(shared => MeadValue(shared, health))
+                    .FirstOrDefault();
+                if (best == null)
+                {
+                    continue;
+                }
+
+                bool carried = stock.Any(pair => pair.Value > 0 && items.ContainsKey(pair.Key) &&
+                    items[pair.Key].m_food <= 0f && MeadValue(items[pair.Key], health) >= MeadValue(best, health));
+                if (carried)
+                {
+                    continue;
+                }
+
+                string reason = (health ? "Restores " + Mathf.RoundToInt(MeadValue(best, true)) + " health"
+                    : "Restores " + Mathf.RoundToInt(MeadValue(best, false)) + " stamina") + ". Keep some for hard fights.";
+                Suggestion suggestion = plan.ForGoal(best.m_name, best.m_name, plan.Planner.Make(best.m_name), Tier.Food,
+                    Localized(best.m_name), reason);
+                if (suggestion != null)
+                {
+                    yield return suggestion;
+                }
+            }
+        }
+
+        private static float MeadValue(ItemDrop.ItemData.SharedData shared, bool health)
+        {
+            SE_Stats effect = shared.m_consumeStatusEffect as SE_Stats;
+            if (effect == null)
+            {
+                return 0f;
+            }
+
+            return health ? effect.m_healthUpFront + effect.m_healthOverTime : effect.m_staminaUpFront + effect.m_staminaOverTime;
         }
 
         private static float FoodValue(ItemDrop.ItemData.SharedData shared, bool magic)
@@ -1265,6 +1722,10 @@ namespace CriticalPath
             if (plan.Planner.Makings.TryGetValue(item, out Making making))
             {
                 step = plan.Planner.Make(item);
+                if (step == null)
+                {
+                    return FindFor(plan, goal.Journey, item, Localized(item) + label, Tier.Boss);
+                }
 
                 // Once a mead has been made its base counts as known, so check
                 // the stock to tell whether to brew another base first.
@@ -1309,7 +1770,7 @@ namespace CriticalPath
             int crafts = Mathf.CeilToInt((float)missing.Short / Mathf.Max(recipe.m_amount, 1));
             foreach (Piece.Requirement requirement in recipe.m_resources)
             {
-                if (requirement.m_resItem == null || !FoundParts.TryGetValue(requirement.m_resItem.name, out string where))
+                if (!Counts(requirement) || !FoundParts.TryGetValue(requirement.m_resItem.name, out string where))
                 {
                     continue;
                 }
@@ -1404,6 +1865,9 @@ namespace CriticalPath
             // Item made by a smelter, fermenter or cooking station, to how it is made there.
             private readonly Dictionary<string, string> conversions = new Dictionary<string, string>();
 
+            // Item made by a conversion, to what it is made from.
+            private readonly Dictionary<string, string> conversionInputs = new Dictionary<string, string>();
+
             public Plan(Player player, HashSet<string> built)
             {
                 Planner.Known = new HashSet<string>(KnownMaterial(player));
@@ -1424,16 +1888,7 @@ namespace CriticalPath
                     };
                 }
 
-                // Built pieces first, so a material made at several stations is made
-                // at one already standing; then cheapest first.
-                IEnumerable<Piece> pieces = HammerPieces()
-                    .OrderByDescending(piece => built.Contains(piece.m_name))
-                    .ThenBy(piece => Materials(piece.m_resources, 1));
-                foreach (Piece piece in pieces)
-                {
-                    AddPiece(piece, built);
-                }
-
+                // Gates first, so a smelter's choice of ore can favour one a tool opens up.
                 foreach (Gate gate in Gates)
                 {
                     ItemDrop.ItemData.SharedData tool = Shared(gate.Tool);
@@ -1445,6 +1900,23 @@ namespace CriticalPath
                         OpenGates.Add(gate);
                     }
                 }
+
+                // Built pieces first, so a material made at several stations is made
+                // at one already standing; then cheapest first.
+                IEnumerable<Piece> pieces = HammerPieces()
+                    .OrderByDescending(piece => built.Contains(piece.m_name))
+                    .ThenBy(piece => Materials(piece.m_resources, 1));
+                foreach (Piece piece in pieces)
+                {
+                    AddPiece(piece, built);
+                }
+            }
+
+            // How easily a smelter's input can be had: already found, or opened up
+            // by a tool, such as iron scrap by the swamp key.
+            private int Obtainable(string item)
+            {
+                return Planner.Known.Contains(item) ? 2 : Planner.Gathers.ContainsKey(item) ? 1 : 0;
             }
 
             private void AddPiece(Piece piece, HashSet<string> built)
@@ -1484,7 +1956,20 @@ namespace CriticalPath
                 {
                     foreach (Smelter.ItemConversion conversion in smelter.m_conversion)
                     {
-                        AddConversion(piece, conversion.m_from, conversion.m_to);
+                        AddConversion(piece, conversion.m_from, conversion.m_to, smelter.m_fuelItem);
+                    }
+                }
+
+                // Collects something on its own, such as sap from a Yggdrasil root.
+                SapCollector collector = piece.GetComponent<SapCollector>();
+                if (collector != null && collector.m_spawnItem != null)
+                {
+                    string item = collector.m_spawnItem.m_itemData.m_shared.m_name;
+                    if (!Planner.Makings.ContainsKey(item))
+                    {
+                        bool root = collector.m_mustConnectTo != null && collector.m_mustConnectTo.name == "YggdrasilRoot";
+                        conversions[item] = "Collect from a " + Localized(piece.m_name) + (root ? " built on a Yggdrasil root" : "");
+                        Planner.Makings[item] = new Making { Piece = piece.m_name };
                     }
                 }
 
@@ -1507,20 +1992,47 @@ namespace CriticalPath
                 }
             }
 
-            private void AddConversion(Piece piece, ItemDrop from, ItemDrop to)
+            // Fuel counts as a material too, such as the sap the Eitr refinery burns.
+            private void AddConversion(Piece piece, ItemDrop from, ItemDrop to, ItemDrop fuel = null)
             {
-                if (from == null || to == null || Planner.Makings.ContainsKey(to.m_itemData.m_shared.m_name))
+                if ((from == null && fuel == null) || to == null)
                 {
                     return;
                 }
 
-                conversions[to.m_itemData.m_shared.m_name] = "Make at " + Localized(piece.m_name) + " from " +
-                    Localized(from.m_itemData.m_shared.m_name);
-                Planner.Makings[to.m_itemData.m_shared.m_name] = new Making
+                // Made several ways, such as iron from ore or scrap: keep the way
+                // whose input is easiest to come by. Crafted things keep their recipe.
+                string made = to.m_itemData.m_shared.m_name;
+                if (Planner.Makings.ContainsKey(made))
                 {
-                    Piece = piece.m_name,
-                    Materials = new List<string> { from.m_itemData.m_shared.m_name }
-                };
+                    if (!conversionInputs.TryGetValue(made, out string current) || from == null ||
+                        Obtainable(from.m_itemData.m_shared.m_name) <= Obtainable(current))
+                    {
+                        return;
+                    }
+                }
+
+                if (from != null)
+                {
+                    conversionInputs[made] = from.m_itemData.m_shared.m_name;
+                }
+
+                List<string> materials = new List<string>();
+                if (from != null)
+                {
+                    materials.Add(from.m_itemData.m_shared.m_name);
+                }
+
+                string burning = "";
+                if (fuel != null)
+                {
+                    materials.Add(fuel.m_itemData.m_shared.m_name);
+                    burning = ", burning " + Localized(fuel.m_itemData.m_shared.m_name);
+                }
+
+                conversions[to.m_itemData.m_shared.m_name] = "Make at " + Localized(piece.m_name) +
+                    (from != null ? " from " + Localized(from.m_itemData.m_shared.m_name) : "") + burning;
+                Planner.Makings[to.m_itemData.m_shared.m_name] = new Making { Piece = piece.m_name, Materials = materials };
             }
 
             // Adds the next quality of a worn item as something the planner can make.
@@ -1539,7 +2051,7 @@ namespace CriticalPath
                 Planner.Makings[id] = new Making { Station = station, Level = level, Materials = Needs(recipe.m_resources, next) };
 
                 string costs = string.Join(", ", recipe.m_resources
-                    .Where(requirement => requirement.m_resItem != null && requirement.GetAmount(next) > 0)
+                    .Where(requirement => Counts(requirement, next))
                     .Select(requirement => requirement.GetAmount(next) + " " +
                         Localized(requirement.m_resItem.m_itemData.m_shared.m_name))
                     .ToArray());
@@ -1582,7 +2094,8 @@ namespace CriticalPath
                     {
                         Name = "Find " + Localized(target),
                         Detail = "",
-                        Reason = reason.Length > 0 ? reason : gate.Where + " with your " + ItemTitle(gate.Tool) + "."
+                        Reason = reason.Length > 0 ? reason : gate.Where + " with your " + ItemTitle(gate.Tool) +
+                            (gate.Or.Length > 0 ? ", " + Names(gate.Or) : "") + "."
                     };
                 }
                 else if (upgrades.TryGetValue(id, out Suggestion upgrade))
@@ -1618,10 +2131,17 @@ namespace CriticalPath
             }
         }
 
+        // Upgrade-only parts are spent at an upgrader, never at a crafting station,
+        // so they don't count towards making something.
+        private static bool Counts(Piece.Requirement requirement, int quality = 1)
+        {
+            return requirement.m_resItem != null && !requirement.m_upgraderResource && requirement.GetAmount(quality) > 0;
+        }
+
         private static List<string> Needs(Piece.Requirement[] requirements, int quality)
         {
             return requirements
-                .Where(requirement => requirement.m_resItem != null && requirement.GetAmount(quality) > 0)
+                .Where(requirement => Counts(requirement, quality))
                 .Select(requirement => requirement.m_resItem.m_itemData.m_shared.m_name)
                 .ToList();
         }
@@ -1679,16 +2199,43 @@ namespace CriticalPath
             });
         }
 
-        // For each kind of crafting station nearby, the extensions you know how to
-        // build that its highest-level copy doesn't have yet. Each one raises it a level.
+        // Crafting stations you know how to build but never have, and extensions
+        // for the ones you have. A station nearby is checked for what its
+        // highest-level copy is missing; one elsewhere, for extensions never built.
         private static IEnumerable<Suggestion> StationUpgrades(Player player, Plan plan, List<Piece> nearby,
-            Dictionary<string, int> stock)
+            Dictionary<string, int> stock, HashSet<string> built)
         {
-            IEnumerable<CraftingStation> stations = nearby
+            List<CraftingStation> stations = nearby
                 .Select(piece => piece.GetComponent<CraftingStation>())
                 .Where(station => station != null)
                 .GroupBy(station => station.m_name)
-                .Select(sameKind => sameKind.OrderByDescending(station => station.GetLevel()).First());
+                .Select(sameKind => sameKind.OrderByDescending(station => station.GetLevel()).First())
+                .ToList();
+            HashSet<string> near = new HashSet<string>(stations.Select(station => station.m_name));
+            Dictionary<string, int> known = KnownStations(player);
+
+            foreach (Piece piece in plan.Pieces.Values.Where(piece => player.IsRecipeKnown(piece.m_name)))
+            {
+                CraftingStation kind = piece.GetComponent<CraftingStation>();
+                if (kind != null && !near.Contains(kind.m_name) && !built.Contains(piece.m_name) && !known.ContainsKey(kind.m_name))
+                {
+                    yield return StationSuggestion(piece, stock, "A crafting station you know how to build but haven't yet.");
+                    continue;
+                }
+
+                StationExtension extension = piece.GetComponent<StationExtension>();
+                if (extension == null || extension.m_craftingStation == null || built.Contains(piece.m_name))
+                {
+                    continue;
+                }
+
+                string station = extension.m_craftingStation.m_name;
+                if (!near.Contains(station) && known.ContainsKey(station))
+                {
+                    yield return StationSuggestion(piece, stock, "Raises your " + Localized(station) + " a level. Build it next to the " +
+                        Localized(station) + ".");
+                }
+            }
 
             foreach (CraftingStation station in stations)
             {
@@ -1714,24 +2261,29 @@ namespace CriticalPath
                 string stationName = Localized(station.m_name);
                 foreach (Piece piece in missing)
                 {
-                    string costs = Costs(piece.m_resources);
-                    string at = piece.m_craftingStation != null ? " at " + Localized(piece.m_craftingStation.m_name) : "";
-                    yield return new Suggestion
-                    {
-                        Id = piece.m_name,
-                        For = piece.m_name,
-                        Name = Localized(piece.m_name),
-                        Tier = Tier.Station,
-                        Reason = "Raises your " + stationName + " from level " + level + " to " + (level + 1) +
-                            ". Build it next to the " + stationName + ".",
-                        Detail = costs.Length > 0 ? "Build" + at + ": " + costs : "",
-                        Ready = PathRules.HasAll(piece.m_resources
-                            .Where(requirement => requirement.m_resItem != null && requirement.m_amount > 0)
-                            .Select(requirement => new KeyValuePair<string, int>(
-                                requirement.m_resItem.m_itemData.m_shared.m_name, requirement.m_amount)), stock)
-                    };
+                    yield return StationSuggestion(piece, stock, "Raises your " + stationName + " from level " + level +
+                        " to " + (level + 1) + ". Build it next to the " + stationName + ".");
                 }
             }
+        }
+
+        private static Suggestion StationSuggestion(Piece piece, Dictionary<string, int> stock, string reason)
+        {
+            string costs = Costs(piece.m_resources);
+            string at = piece.m_craftingStation != null ? " at " + Localized(piece.m_craftingStation.m_name) : "";
+            return new Suggestion
+            {
+                Id = piece.m_name,
+                For = piece.m_name,
+                Name = Localized(piece.m_name),
+                Tier = Tier.Station,
+                Reason = reason,
+                Detail = costs.Length > 0 ? "Build" + at + ": " + costs : "",
+                Ready = PathRules.HasAll(piece.m_resources
+                    .Where(requirement => Counts(requirement))
+                    .Select(requirement => new KeyValuePair<string, int>(
+                        requirement.m_resItem.m_itemData.m_shared.m_name, requirement.m_amount)), stock)
+            };
         }
 
         private static readonly AccessTools.FieldRef<CraftingStation, List<StationExtension>> AttachedExtensions =
@@ -1765,7 +2317,7 @@ namespace CriticalPath
         private static bool CanMake(Recipe recipe, Dictionary<string, int> stock)
         {
             return PathRules.HasAll(recipe.m_resources
-                .Where(requirement => requirement.m_resItem != null && requirement.m_amount > 0)
+                .Where(requirement => Counts(requirement))
                 .Select(requirement => new KeyValuePair<string, int>(
                     requirement.m_resItem.m_itemData.m_shared.m_name, requirement.m_amount)), stock);
         }
@@ -1780,7 +2332,7 @@ namespace CriticalPath
 
         private static int Materials(Piece.Requirement[] requirements, int quality)
         {
-            return requirements.Where(requirement => requirement.m_resItem != null)
+            return requirements.Where(requirement => Counts(requirement, quality))
                 .Sum(requirement => requirement.GetAmount(quality));
         }
 
@@ -1809,7 +2361,7 @@ namespace CriticalPath
         private static string Costs(Piece.Requirement[] requirements)
         {
             return string.Join(", ", requirements
-                .Where(requirement => requirement.m_resItem != null && requirement.m_amount > 0)
+                .Where(requirement => Counts(requirement))
                 .Select(requirement => requirement.m_amount + " " +
                     Localized(requirement.m_resItem.m_itemData.m_shared.m_name))
                 .ToArray());
@@ -1878,6 +2430,7 @@ namespace CriticalPath
         {
             seenPlayer = __instance;
             seenKnowledge = Knowledge(__instance);
+            lastMaterial = "";
         }
 
         // The game checks recipes whenever an item or station is discovered, so
@@ -1890,7 +2443,85 @@ namespace CriticalPath
             {
                 lastCause = PathRules.NewDiscovery(seenKnowledge, Knowledge(__instance));
                 dirty |= lastCause.Length > 0;
+                if (materialUses.Value)
+                {
+                    // Runs inside the game's own recipe check, so a mistake here must
+                    // never stop recipes unlocking.
+                    try
+                    {
+                        foreach (string material in KnownMaterial(__instance).Where(material => !seenKnowledge.Contains(material)).ToList())
+                        {
+                            ExplainMaterial(__instance, material);
+                        }
+                    }
+                    catch (System.Exception error)
+                    {
+                        log.LogWarning("Couldn't list what a new material is used for: " + error);
+                    }
+                }
             }
+        }
+
+        // Recipes and pieces that take it, and what is made from it or burns it.
+        private static void ExplainMaterial(Player player, string material)
+        {
+            List<string> uses = new List<string>();
+            uses.AddRange(ObjectDB.instance.m_recipes
+                .Where(recipe => IsUsable(recipe) && recipe.m_resources.Any(requirement =>
+                    Counts(requirement) && requirement.m_resItem.m_itemData.m_shared.m_name == material))
+                .Select(recipe => Localized(ItemName(recipe))));
+            foreach (Piece piece in HammerPieces())
+            {
+                if (piece.m_resources.Any(requirement => Counts(requirement) && requirement.m_resItem.m_itemData.m_shared.m_name == material))
+                {
+                    uses.Add(Localized(piece.m_name));
+                }
+
+                Smelter smelter = piece.GetComponent<Smelter>();
+                if (smelter != null)
+                {
+                    uses.AddRange(smelter.m_conversion
+                        .Where(conversion => conversion.m_from != null && conversion.m_to != null &&
+                            conversion.m_from.m_itemData.m_shared.m_name == material)
+                        .Select(conversion => Localized(conversion.m_to.m_itemData.m_shared.m_name) + " at the " + Localized(piece.m_name)));
+                    if (smelter.m_fuelItem != null && smelter.m_fuelItem.m_itemData.m_shared.m_name == material)
+                    {
+                        uses.Add("fuel for the " + Localized(piece.m_name));
+                    }
+                }
+
+                Fermenter fermenter = piece.GetComponent<Fermenter>();
+                if (fermenter != null)
+                {
+                    uses.AddRange(fermenter.m_conversion
+                        .Where(conversion => conversion.m_from != null && conversion.m_to != null &&
+                            conversion.m_from.m_itemData.m_shared.m_name == material)
+                        .Select(conversion => Localized(conversion.m_to.m_itemData.m_shared.m_name)));
+                }
+
+                CookingStation cooking = piece.GetComponent<CookingStation>();
+                if (cooking != null)
+                {
+                    uses.AddRange(cooking.m_conversion
+                        .Where(conversion => conversion.m_from != null && conversion.m_to != null &&
+                            conversion.m_from.m_itemData.m_shared.m_name == material)
+                        .Select(conversion => Localized(conversion.m_to.m_itemData.m_shared.m_name)));
+                }
+            }
+
+            uses = uses.Distinct().ToList();
+            if (uses.Count == 0)
+            {
+                return;
+            }
+
+            string list = string.Join(", ", uses.Take(MaxUses).ToArray()) +
+                (uses.Count > MaxUses ? " and " + (uses.Count - MaxUses) + " more" : "");
+            string name = Localized(material);
+            log.LogInfo(name + " is used for " + string.Join(", ", uses.ToArray()));
+            player.Message(MessageHud.MessageType.TopLeft, name + ": used for " + list);
+            lastMaterial = "<color=#ffcc66>New: " + name + "</color>\nUsed for " + list + ".";
+            dirty = true;
         }
 
         [HarmonyPostfix]

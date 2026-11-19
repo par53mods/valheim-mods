@@ -8,16 +8,18 @@ namespace CriticalPath
     public enum Tier
     {
         Harvest,
+
+        // A key step through the next boss's biome, such as the Galdr table.
+        Journey,
         Food,
 
         // Meads the next boss fight calls for.
         Boss,
         Armor,
 
-        // An extension a nearby crafting station is still missing.
+        // A crafting station or extension you know how to build but haven't.
         Station,
-        Comfort,
-        Gear
+        Comfort
     }
 
     public class Suggestion
@@ -111,6 +113,98 @@ namespace CriticalPath
         {
             visiting.Clear();
             return MaterialStep(item);
+        }
+
+        // The first thing on the way to a goal that can't be found, made or
+        // gathered yet, such as a material still to be picked up. Null when
+        // nothing is in the way.
+        public string Blocker(string id)
+        {
+            visiting.Clear();
+            return BlockerOf(id);
+        }
+
+        private string BlockerOf(string id)
+        {
+            if (!Makings.TryGetValue(id, out Making making) || visiting.Count >= MaxDepth || !visiting.Add(id))
+            {
+                return null;
+            }
+
+            try
+            {
+                string blocker = StationBlocker(making.Station, making.Level);
+                if (blocker == null && making.Piece.Length > 0 && !Built.Contains(making.Piece))
+                {
+                    blocker = BlockerOf(making.Piece);
+                }
+
+                foreach (string material in making.Materials)
+                {
+                    if (blocker != null)
+                    {
+                        break;
+                    }
+
+                    blocker = MaterialBlocker(material);
+                }
+
+                return blocker;
+            }
+            finally
+            {
+                visiting.Remove(id);
+            }
+        }
+
+        private string StationBlocker(string station, int level)
+        {
+            if (station.Length == 0)
+            {
+                return null;
+            }
+
+            StationLevels.TryGetValue(station, out int known);
+            if (known == 0)
+            {
+                if (StationPieces.TryGetValue(station, out string piece) && !Built.Contains(piece))
+                {
+                    string blocker = BlockerOf(piece);
+                    if (blocker != null)
+                    {
+                        return blocker;
+                    }
+                }
+
+                known = 1;
+            }
+
+            if (known >= level || !Extensions.TryGetValue(station, out List<string> extensions))
+            {
+                return null;
+            }
+
+            if (extensions.Any(extension => PieceStep(extension) != null))
+            {
+                return null;
+            }
+
+            return extensions.Select(BlockerOf).FirstOrDefault(blocker => blocker != null);
+        }
+
+        private string MaterialBlocker(string item)
+        {
+            if (Known.Contains(item))
+            {
+                return null;
+            }
+
+            if (Makings.ContainsKey(item))
+            {
+                return BlockerOf(item);
+            }
+
+            return Gathers.TryGetValue(item, out string tool) ? MaterialBlocker(tool) : item;
         }
 
         private string MakeStep(string id)
@@ -295,12 +389,11 @@ namespace CriticalPath
             return ids;
         }
 
-        // Ready for the boss: no more fight prep or gear, but the rest of the path
-        // still shows.
+        // Ready for the boss: no more fight prep, but the rest of the path still shows.
         public static List<Suggestion> WhenReady(IEnumerable<Suggestion> suggestions)
         {
             return suggestions
-                .Where(s => s.Tier != Tier.Armor && s.Tier != Tier.Gear && s.Tier != Tier.Boss)
+                .Where(s => s.Tier != Tier.Armor && s.Tier != Tier.Boss)
                 .ToList();
         }
 

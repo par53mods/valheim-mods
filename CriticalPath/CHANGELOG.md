@@ -1,7 +1,21 @@
 # Changelog
 
-## 0.1.7 (2026-11-18)
+## 0.1.7 (2026-11-19)
 
+- Guides you through the Mistlands: the Wisplight, Black forge, Sap extractor, Eitr refinery, Galdr table and feather cape, in that order, each as its next step.
+- Guides you through the Ashlands (the Ashlands longship, Black forge vise, flametal and Ash cape) and the Deep North (gold, Black forge metal cutter and Deep North cape) the same way.
+- Guides you through the Meadows, Black Forest, Swamp, Mountains and Plains too, such as the forge, smelter, charcoal kiln and Karve, the longship, the wolf cape, and the artisan table, blast furnace and black metal axe.
+- Knows which tool more materials need: the iron pickaxe for obsidian, the black metal axe for Yggdrasil wood, the black metal pickaxe for black marble and flametal ore, dynamite for gold veins, and the swamp key for iron scrap. Those for later biomes open up once you've beaten the boss before that biome.
+- Where the game has another source, the hint says so, such as shipwrecks and old furniture for fine wood or loose tin on the shore.
+- Fix: iron goals waited on iron ore and stayed hidden until you'd smelted some iron. They now plan from iron scrap in Sunken Crypts, or from whichever ore you've already found.
+- Items only a trader sells say who to buy them from.
+- Suggests the strongest healing and stamina meads you can make when you carry none as good.
+- Fix: the feather cape and other gear that also lists an upgrade-only part never appeared, because the mod counted that part as needed. Normal crafting doesn't use it.
+- Sap counts as collected by a Sap extractor, and fuel counts as an ingredient, such as the Eitr refinery's sap. The Frost kiln's frozen fuel counts as made from ice.
+- When a goal, food or item for the boss waits on a material you haven't found yet, it names the material and where to look, from your current biome's list or an earlier one's. Creature names come from the game. Before, those goals were left out without a word.
+- Suggests crafting stations you know how to build but haven't, and extensions for stations elsewhere that you've never built.
+- By default, the first time you pick up a material, a message and the panel say what it's used for. The `MaterialUses` setting turns this off.
+- No longer suggests every weapon and tool you know but haven't made. Weapons, shields and arrows still appear when they help against the next boss.
 - For the Queen, suggests collecting the Sealbreaker Fragments you're still short of (9 make the Sealbreaker) and where to look, once your armor is ready. Before, it only listed the Sealbreaker itself.
 - For Fader, lists the 3 bells to bring and suggests collecting the Bell Fragments you're short of (3 make a bell), once your armor is ready. Before, it listed nothing to bring.
 - Adds the Deep North boss after Fader: 3 hateful blood from Black Ice cores, frost resistance, and an armor target of 108. Before, it fell back to a generic entry that named the wrong item.

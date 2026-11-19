@@ -68,7 +68,7 @@ public static class PathRulesTests
         }, 3)));
         Check("newest unlock breaks ties", "new,old", Ids(PathRules.Choose(new[]
         {
-            Make("old", Tier.Gear, 3), Make("new", Tier.Gear, 8)
+            Make("old", Tier.Comfort, 3), Make("new", Tier.Comfort, 8)
         }, 2)));
         Check("name settles a full tie", "a,b", Ids(PathRules.Choose(new[]
         {
@@ -82,7 +82,7 @@ public static class PathRulesTests
         {
             Make("s1", Tier.Harvest), Make("s2", Tier.Harvest), Make("s3", Tier.Harvest)
         }, 3)));
-        Check("count is respected", 1, PathRules.Choose(new[] { Make("a", Tier.Gear), Make("b", Tier.Gear) }, 1).Count);
+        Check("count is respected", 1, PathRules.Choose(new[] { Make("a", Tier.Comfort), Make("b", Tier.Comfort) }, 1).Count);
         Check("nothing to suggest", 0, PathRules.Choose(new Suggestion[0], 3).Count);
         Check("a shared step shows once, at its best rank", "forge,chair", Ids(PathRules.Choose(new[]
         {
@@ -101,8 +101,8 @@ public static class PathRulesTests
         }, 3)));
         Check("latest batch can fill the list", "a,b", Ids(PathRules.Choose(new[]
         {
-            new Suggestion { Id = "a", Name = "a", Tier = Tier.Gear, Latest = true },
-            new Suggestion { Id = "b", Name = "b", Tier = Tier.Gear, Latest = true },
+            new Suggestion { Id = "a", Name = "a", Tier = Tier.Comfort, Latest = true },
+            new Suggestion { Id = "b", Name = "b", Tier = Tier.Comfort, Latest = true },
             Make("axe", Tier.Harvest)
         }, 2)));
 
@@ -179,6 +179,45 @@ public static class PathRulesTests
         brewing.Built.Add("piece_fermenter");
         Check("then the mead base", "poisonBase", brewing.Make("poisonMead"));
 
+        // The Mistlands as the game has it: the Sealbreaker and feather cape are
+        // made at the Galdr table, which takes Eitr, which the refinery makes from
+        // soft tissue burning sap, which a sap extractor collects.
+        Planner mist = new Planner();
+        mist.Known = new HashSet<string> { "fragment", "feathers", "scaleHide", "yggWood", "blackMetal", "blackCore", "blackMarble", "softTissue" };
+        mist.StationLevels = new Dictionary<string, int> { { "bench", 5 } };
+        mist.Built = new HashSet<string> { "piece_bench" };
+        mist.Makings["sealbreaker"] = Needs("galdr", 1, "fragment");
+        mist.Makings["featherCape"] = Needs("galdr", 1, "feathers", "scaleHide", "eitr");
+        mist.Makings["piece_galdr"] = Needs("bench", 1, "yggWood", "blackMetal", "blackCore", "eitr");
+        mist.Makings["piece_refinery"] = Needs("bench", 1, "blackMarble", "blackCore", "sap");
+        mist.Makings["piece_extractor"] = Needs("bench", 1, "yggWood", "blackMetal", "needle");
+        mist.Makings["eitr"] = new Making { Piece = "piece_refinery", Materials = new List<string> { "softTissue", "sap" } };
+        mist.Makings["sap"] = new Making { Piece = "piece_extractor" };
+        mist.StationPieces["galdr"] = "piece_galdr";
+        Check("no Dvergr extractor, no feather cape", null, mist.Make("featherCape"));
+        Check("the Dvergr extractor is in the way of the cape", "needle", mist.Blocker("featherCape"));
+        Check("and of the Sealbreaker", "needle", mist.Blocker("sealbreaker"));
+        Check("a known material is never the blocker", "needle", mist.Blocker("piece_galdr"));
+        mist.Known.Add("needle");
+        Check("then the sap extractor", "piece_extractor", mist.Make("featherCape"));
+        Check("nothing in the way now", null, mist.Blocker("featherCape"));
+        mist.Built.Add("piece_extractor");
+        Check("then collect sap", "sap", mist.Make("sealbreaker"));
+        mist.Known.Add("sap");
+        Check("then the refinery", "piece_refinery", mist.Make("sealbreaker"));
+        mist.Built.Add("piece_refinery");
+        Check("then Eitr", "eitr", mist.Make("sealbreaker"));
+        mist.Known.Add("eitr");
+        Check("then the Galdr table", "piece_galdr", mist.Make("sealbreaker"));
+        mist.Built.Add("piece_galdr");
+        mist.StationLevels["galdr"] = 1;
+        Check("then the Sealbreaker itself", "", mist.Make("sealbreaker"));
+
+        Planner blocked = BronzeAge();
+        blocked.Extensions["forge"] = new List<string> { "piece_anvil" };
+        blocked.Makings["piece_anvil"] = Needs("bench", 1, "iron");
+        Check("an unreachable station level names what its upgrade needs", "iron", blocked.Blocker("ironPickaxe"));
+
         var armor = new[]
         {
             new ArmorOption { Id = "bronzeHelm", Slot = 0, Gain = 6f, Cost = 10 },
@@ -202,7 +241,7 @@ public static class PathRulesTests
         Check("ready leaves out fight prep and gear", "cauldron,soup,stew,kiln", Ids(PathRules.WhenReady(new[]
         {
             new Suggestion { Id = "cauldron", Tier = Tier.Food, Latest = true },
-            new Suggestion { Id = "sword", Tier = Tier.Gear, Latest = true },
+            new Suggestion { Id = "sword", Tier = Tier.Boss, Latest = true },
             new Suggestion { Id = "helm", Tier = Tier.Armor, Latest = true },
             new Suggestion { Id = "soup", Tier = Tier.Food, Ready = true },
             new Suggestion { Id = "stew", Tier = Tier.Food },
