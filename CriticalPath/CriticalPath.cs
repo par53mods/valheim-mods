@@ -105,19 +105,28 @@ namespace CriticalPath
             {
                 Find = "Read the Vegvisir in a Mistlands infested mine to mark her lair."
             },
-            new Boss("Fader", 94f, "Offer 3 bells.", HitData.DamageType.Fire, ShieldUse.Strongest)
+            new Boss("Fader", 94f, "Place 3 bells at the altar.", HitData.DamageType.Fire, ShieldUse.Strongest,
+                new Need("Bell", 3, ""))
             {
                 Find = "Read a Vegvisir in an Ashlands fortress to mark its altar."
+            },
+            new Boss("FrozenKing", 108f, "Offer 3 hateful blood at the altar. Earlier bosses join the fight partway through.",
+                HitData.DamageType.Frost, ShieldUse.None,
+                new Need("HatefulBlood", 3, "Destroy Black Ice cores in the Deep North"))
+            {
+                Find = "Read a Vegvisir in the Deep North to mark its altar.",
+                ResistAgainst = "its frost attacks"
             }
         };
 
         private const HitData.DamageType NoResistance = 0;
 
         // Parts that are only found, not made, for something a boss calls for,
-        // with where to look. The Sealbreaker takes 9 fragments.
+        // with where to look. The Sealbreaker takes 9 fragments, a bell 3.
         private static readonly Dictionary<string, string> FoundParts = new Dictionary<string, string>
         {
             { "DvergrKeyFragment", "Search infested mines in the Mistlands" },
+            { "BellFragment", "Destroy charred altars in the Ashlands" },
         };
 
         // Whether a shield is worth carrying into the fight.
@@ -157,7 +166,7 @@ namespace CriticalPath
         // Bosses the game has that the list above doesn't name, such as Kall
         // Fimbulbringer of the Deep North, come last with this armor each.
         private const float LaterBossArmor = 96f;
-        private const string LaterBossHint = "Offer 3 malicious bloods at the altar.";
+        private const string LaterBossHint = "Its altar says what to offer.";
 
         private static readonly ItemDrop.ItemData.ItemType[] ArmorSlots =
         {

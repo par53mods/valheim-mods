@@ -17,7 +17,7 @@ namespace QuickStackStore
     // request, so a chest in use or owned by another player is treated the same way.
     // Optional settings hold some items back, such as enough for a portal; a second
     // press while the inventory is open stacks those too.
-    [BepInPlugin("com.parallel53.quickstackstore", "QuickStackStore", "1.0.5")]
+    [BepInPlugin("com.parallel53.quickstackstore", "QuickStackStore", "1.0.6")]
     public class QuickStackStorePlugin : BaseUnityPlugin
     {
         private const int HotbarRow = 0;
@@ -53,6 +53,9 @@ namespace QuickStackStore
             { "WitheredBone", 10 },
             { "DragonEgg", 3 },
             { "GoblinTotem", 5 },
+            { "DvergrKey", 1 },
+            { "Bell", 3 },
+            { "HatefulBlood", 3 },
         };
 
         private static readonly string[] OutpostKit = { "piece_workbench", "fire_pit", "bed" };
@@ -551,7 +554,9 @@ namespace QuickStackStore
 
             foreach (OfferingBowl bowl in UnityEngine.Object.FindObjectsByType<OfferingBowl>(FindObjectsSortMode.None))
             {
-                if (bowl.m_bossItem != null && bowl.m_bossItems > 0)
+                // Altars with item stands, such as Yagluth's and Fader's, take one item
+                // per stand, and their own count doesn't match, so the list above stands.
+                if (bowl.m_bossItem != null && bowl.m_bossItems > 0 && !bowl.m_useItemStands)
                 {
                     string name = bowl.m_bossItem.m_itemData.m_shared.m_name;
                     int listed;

@@ -3,6 +3,8 @@
 ## 0.1.7 (2026-11-18)
 
 - For the Queen, suggests collecting the Sealbreaker Fragments you're still short of (9 make the Sealbreaker) and where to look, once your armor is ready. Before, it only listed the Sealbreaker itself.
+- For Fader, lists the 3 bells to bring and suggests collecting the Bell Fragments you're short of (3 make a bell), once your armor is ready. Before, it listed nothing to bring.
+- Adds the Deep North boss after Fader: 3 hateful blood from Black Ice cores, frost resistance, and an armor target of 108. Before, it fell back to a generic entry that named the wrong item.
 
 ## 0.1.6 (2026-11-14)
 

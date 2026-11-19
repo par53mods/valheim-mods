@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.6 (2026-11-18)
+
+- `PreserveBossItems` now covers Fader's bells, the Deep North boss's hateful blood and the Sealbreaker.
+- Fixed: with Yagluth's altar loaded nearby, `PreserveBossItems` expected 3 fuling totems instead of 5. Altars that hold their items on stands now keep the right count.
+
 ## 1.0.5 (2026-11-09)
 
 - New Keep settings, all off by default, to hold items back from the chests: `PreservePortalMats`, `PreserveBoatMats` (the best boat you've learned and can build), `PreserveBossItems` (only when you carry exactly what an altar takes), `KeepOutpostKit` (workbench, campfire and bed), `KeepCoins`, `KeepSpareAmmo` and a `KeepItems` list such as `Wood:20, Resin:10`.
