@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
-"""Packages the local mods as Thunderstore-style zips for Import local mod."""
+"""Packages local mods as Thunderstore-style zips for Import local mod.
+
+Name the mods to package, such as `package-mods.py CriticalPath`, or pass
+--all for every one.
+"""
 import json
+import sys
 import struct
 import zipfile
 import zlib
@@ -365,5 +370,10 @@ def package(mod):
 
 
 if __name__ == "__main__":
+    names = sys.argv[1:]
+    known = {mod["name"] for mod in MODS}
+    if not names or any(name not in known and name != "--all" for name in names):
+        sys.exit("Usage: package-mods.py <mod> [<mod> ...] | --all\nMods: " + ", ".join(sorted(known)))
     for mod in MODS:
-        package(mod)
+        if "--all" in names or mod["name"] in names:
+            package(mod)

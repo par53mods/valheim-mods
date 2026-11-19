@@ -22,7 +22,7 @@ Mono's `csc` against an installed copy of Valheim and BepInEx, and copies the DL
 into `BepInEx/plugins`. The scripts expect the Steam install on macOS; change
 `GAME_DIR` at the top for another location.
 
-`package-mods.py` builds the Thunderstore zips from the compiled DLLs.
+`package-mods.py <mod> ...` builds the named mods' Thunderstore zips from the compiled DLLs (`--all` for every one).
 
 ## License
 
