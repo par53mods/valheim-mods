@@ -13,7 +13,7 @@ namespace CriticalPath
 {
     // Shows what to make next on the inventory screen, worked out from what this
     // character has discovered, so a character mid-game starts in the right place.
-    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.6")]
+    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.7")]
     public class CriticalPathPlugin : BaseUnityPlugin
     {
         private const string BuiltKey = "parallel53.criticalpath.built";
@@ -112,6 +112,13 @@ namespace CriticalPath
         };
 
         private const HitData.DamageType NoResistance = 0;
+
+        // Parts that are only found, not made, for something a boss calls for,
+        // with where to look. The Sealbreaker takes 9 fragments.
+        private static readonly Dictionary<string, string> FoundParts = new Dictionary<string, string>
+        {
+            { "DvergrKeyFragment", "Search infested mines in the Mistlands" },
+        };
 
         // Whether a shield is worth carrying into the fight.
         private enum ShieldUse
@@ -969,6 +976,13 @@ namespace CriticalPath
                 }
 
                 Suggestion suggestion = BringSuggestion(plan, stock, goal, missing, "Bring it to fight " + goal.Name + ".");
+
+                // Hunting for parts waits for the armor, like a summoning offering.
+                if (suggestion != null && !armored && suggestion.Id.StartsWith("collect:"))
+                {
+                    continue;
+                }
+
                 if (suggestion != null)
                 {
                     yield return suggestion;
@@ -1232,6 +1246,12 @@ namespace CriticalPath
             Shortfall missing, string reason, string label = "")
         {
             string item = missing.Item;
+            Suggestion parts = PartsToCollect(plan, stock, goal, missing);
+            if (parts != null)
+            {
+                return parts;
+            }
+
             string step;
             if (plan.Planner.Makings.TryGetValue(item, out Making making))
             {
@@ -1266,6 +1286,43 @@ namespace CriticalPath
 
             bool gather = step != null && step.StartsWith(Planner.GatherPrefix);
             return plan.ForGoal(item, gather ? step : item, step, Tier.Boss, Localized(item) + label, gather ? "" : reason);
+        }
+
+        // Found parts still short for crafting what the boss calls for, such as
+        // Sealbreaker fragments. Null when there are enough, or none are needed.
+        private static Suggestion PartsToCollect(Plan plan, Dictionary<string, int> stock, BossGoal goal, Shortfall missing)
+        {
+            if (!plan.Recipes.TryGetValue(missing.Item, out Recipe recipe))
+            {
+                return null;
+            }
+
+            int crafts = Mathf.CeilToInt((float)missing.Short / Mathf.Max(recipe.m_amount, 1));
+            foreach (Piece.Requirement requirement in recipe.m_resources)
+            {
+                if (requirement.m_resItem == null || !FoundParts.TryGetValue(requirement.m_resItem.name, out string where))
+                {
+                    continue;
+                }
+
+                string part = requirement.m_resItem.m_itemData.m_shared.m_name;
+                stock.TryGetValue(part, out int have);
+                int needed = requirement.m_amount * crafts - have;
+                if (needed > 0)
+                {
+                    return new Suggestion
+                    {
+                        Id = "collect:" + part,
+                        For = missing.Item,
+                        Name = "Collect " + needed + " more " + Localized(part),
+                        Tier = Tier.Boss,
+                        Reason = where + ", to craft the " + Localized(missing.Item) + " for " + goal.Name + ".",
+                        Detail = CraftDetail(recipe)
+                    };
+                }
+            }
+
+            return null;
         }
 
         // New pieces and upgrades to what is worn, compared slot by slot, keeping

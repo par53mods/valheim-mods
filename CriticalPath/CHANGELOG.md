@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.7 (2026-11-18)
+
+- For the Queen, suggests collecting the Sealbreaker Fragments you're still short of (9 make the Sealbreaker) and where to look, once your armor is ready. Before, it only listed the Sealbreaker itself.
+
 ## 0.1.6 (2026-11-14)
 
 - Suggests extensions that a crafting station near you is still missing, if you know how to build them, such as the one a forge needs for its next level. Each says which level it brings the station to.
