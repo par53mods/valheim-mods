@@ -40,7 +40,7 @@ MODS = [
                   "As with the vanilla Wisplight, creatures can see you through the area your wisp clears, so at higher levels they can spot you from farther away. "
                   "Only your game changes; other players see your wisp clear its normal 15 m.\n\n"
                   "Settings are in `com.parallel53.carelesswisp.cfg`: `EquipRequired` (off), `UseLevels`, `MaxLevel`, `RadiusPerLevel`, `FogPerLevel`, `WispsPerLevel`, `SilverPerLevel`, `EitrPerLevel`, `SoftTissuePerLevel`, `MajesticCarapacePerLevel`, "
-                  "`ClearInstantly`, `PushStrength` (2 from level 2; vanilla 0.08), `ThinFog` and `FogDensity` (0.003; Mistlands weather uses 0.02 to 0.05). "
+                  "`ClearInstantly`, `PushStrength` (2, used only with `ClearInstantly` off; vanilla 0.08), `ThinFog` and `FogDensity` (0.003; Mistlands weather uses 0.02 to 0.05). "
                   "Changes apply straight away.",
         "background": (24, 40, 70),
         "ink": (150, 230, 255),

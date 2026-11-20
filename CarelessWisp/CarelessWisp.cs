@@ -96,7 +96,8 @@ namespace CarelessWisp
                 "From level 2, mist inside the radius disappears at once. On by default. Turn it off to let the wisp " +
                 "push mist out instead, at PushStrength.");
             PushStrength = Config.Bind("Wisp", "PushStrength", 2f, new ConfigDescription(
-                "How hard the wisp pushes mist outward from level 2. 2 by default; the vanilla Wisplight pushes at 0.08.",
+                "How hard the wisp pushes mist outward from level 2 when ClearInstantly is off. 2 by default; the vanilla " +
+                "Wisplight pushes at 0.08. Stronger pushes clear faster but throw mist past the edge for a moment.",
                 new AcceptableValueRange<float>(0f, 20f)));
             ThinFog = Config.Bind("Fog", "ThinFog", true,
                 "Lets the Wisplight thin the Mistlands fog, as FogPerLevel sets. On by default. " +
@@ -335,7 +336,11 @@ namespace CarelessWisp
             int current = EffectiveLevel;
             float radius = Mathf.Max(1f, ListValue(RadiusPerLevel, current - 1));
             wisp.m_forceField.endRange = radius;
-            wisp.m_forceField.gravity = -(current >= 2 ? PushStrength.Value : VanillaPush);
+            // A strong push throws the mist the game spawns at the clearing's edge
+            // past the radius while you move, and it drifts back when you stop.
+            // Instant clearing doesn't need it, so the edge keeps the vanilla push.
+            bool push = current >= 2 && !ClearInstantly.Value;
+            wisp.m_forceField.gravity = -(push ? PushStrength.Value : VanillaPush);
             wispSeen = Time.time;
 
             string state = "Wisplight level " + current + ": your wisp clears mist " + radius + " m around it.";
