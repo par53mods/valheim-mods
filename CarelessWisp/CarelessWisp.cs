@@ -36,6 +36,7 @@ namespace CarelessWisp
         internal static ConfigEntry<string> SilverPerLevel;
         internal static ConfigEntry<string> EitrPerLevel;
         internal static ConfigEntry<string> SoftTissuePerLevel;
+        internal static ConfigEntry<string> CarapacePerLevel;
         internal static ConfigEntry<bool> ClearInstantly;
         internal static ConfigEntry<float> PushStrength;
         internal static ConfigEntry<bool> ThinFog;
@@ -78,16 +79,19 @@ namespace CarelessWisp
             FogPerLevel = Config.Bind("Levels", "FogPerLevel", "100, 85, 65, 30, 0",
                 "How much of the Mistlands fog is left while your wisp is out, at each level, as a percentage, from level 1. " +
                 "100, 85, 65, 30, 0 by default. 100 leaves the fog as it is; 0 thins it to FogDensity.");
-            WispsPerLevel = Config.Bind("Upgrades", "WispsPerLevel", "5, 10, 15, 20",
-                "Wisps needed to upgrade the Wisplight to level 2, 3, 4 and 5. 5, 10, 15, 20 by default. " +
+            WispsPerLevel = Config.Bind("Upgrades", "WispsPerLevel", "5, 10, 15, 30",
+                "Wisps needed to upgrade the Wisplight to level 2, 3, 4 and 5. 5, 10, 15, 30 by default. " +
                 "Later levels use the last number.");
             SilverPerLevel = Config.Bind("Upgrades", "SilverPerLevel", "20, 30, 0, 0",
                 "Silver needed for each upgrade, from level 2. 20, 30, 0, 0 by default, so only the upgrades to levels 2 and 3 need it.");
-            EitrPerLevel = Config.Bind("Upgrades", "EitrPerLevel", "0, 0, 20, 25",
-                "Eitr needed for each upgrade, from level 2. 0, 0, 20, 25 by default, so only the upgrades to levels 4 and 5 need it.");
-            SoftTissuePerLevel = Config.Bind("Upgrades", "SoftTissuePerLevel", "0, 5, 10, 15",
-                "Soft tissue needed for each upgrade, from level 2. 0, 5, 10, 15 by default, so the upgrades from " +
+            EitrPerLevel = Config.Bind("Upgrades", "EitrPerLevel", "0, 0, 20, 40",
+                "Eitr needed for each upgrade, from level 2. 0, 0, 20, 40 by default, so only the upgrades to levels 4 and 5 need it.");
+            SoftTissuePerLevel = Config.Bind("Upgrades", "SoftTissuePerLevel", "0, 5, 10, 20",
+                "Soft tissue needed for each upgrade, from level 2. 0, 5, 10, 20 by default, so the upgrades from " +
                 "level 3 need something from the Mistlands.");
+            CarapacePerLevel = Config.Bind("Upgrades", "MajesticCarapacePerLevel", "0, 0, 0, 1",
+                "Majestic carapace, the Seeker Queen's drop, needed for each upgrade, from level 2. 0, 0, 0, 1 by default, " +
+                "so level 5 waits until the Queen is beaten. She drops 5, and the artisan press extension needs 1.");
             ClearInstantly = Config.Bind("Wisp", "ClearInstantly", true,
                 "From level 2, mist inside the radius disappears at once. On by default. Turn it off to let the wisp " +
                 "push mist out instead, at PushStrength.");
@@ -217,6 +221,7 @@ namespace CarelessWisp
             Price(db, recipe, "Silver", SilverPerLevel);
             Price(db, recipe, "Eitr", EitrPerLevel);
             Price(db, recipe, "Softtissue", SoftTissuePerLevel);
+            Price(db, recipe, "QueenDrop", CarapacePerLevel);
         }
 
         private static void Price(ObjectDB db, Recipe recipe, string material, ConfigEntry<string> costs)

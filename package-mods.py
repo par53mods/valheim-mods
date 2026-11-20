@@ -32,14 +32,14 @@ MODS = [
                   "| 2 | 30 m | 85% | 5 wisps, 20 silver |\n"
                   "| 3 | 70 m | 65% | 10 wisps, 30 silver, 5 soft tissue |\n"
                   "| 4 | 200 m | 30% | 15 wisps, 20 Eitr, 10 soft tissue |\n"
-                  "| 5 | 350 m | clear-weather fog | 20 wisps, 25 Eitr, 15 soft tissue |\n\n"
-                  "Each upgrade needs a workbench of the level you're upgrading to. 350 m is the farthest the game draws mist from you.\n\n"
+                  "| 5 | 350 m | clear-weather fog | 30 wisps, 40 Eitr, 20 soft tissue, 1 majestic carapace |\n\n"
+                  "Each upgrade needs a workbench of the level you're upgrading to. Level 5 needs a majestic carapace, so it waits until the Seeker Queen is beaten; she drops 5, and the artisan press extension needs 1. 350 m is the farthest the game draws mist from you.\n\n"
                   "By default a Wisplight anywhere in your inventory gives you its wisp without taking the utility slot, and the best one you carry sets the level. "
                   "Turn on `EquipRequired` to need it equipped as in vanilla. It also works alongside RossQoL's WisplightCarry. "
                   "Remove Better Wisps if you use it; both change the Wisplight's levels and radius.\n\n"
                   "As with the vanilla Wisplight, creatures can see you through the area your wisp clears, so at higher levels they can spot you from farther away. "
                   "Only your game changes; other players see your wisp clear its normal 15 m.\n\n"
-                  "Settings are in `com.parallel53.carelesswisp.cfg`: `EquipRequired` (off), `UseLevels`, `MaxLevel`, `RadiusPerLevel`, `FogPerLevel`, `WispsPerLevel`, `SilverPerLevel`, `EitrPerLevel`, `SoftTissuePerLevel`, "
+                  "Settings are in `com.parallel53.carelesswisp.cfg`: `EquipRequired` (off), `UseLevels`, `MaxLevel`, `RadiusPerLevel`, `FogPerLevel`, `WispsPerLevel`, `SilverPerLevel`, `EitrPerLevel`, `SoftTissuePerLevel`, `MajesticCarapacePerLevel`, "
                   "`ClearInstantly`, `PushStrength` (2 from level 2; vanilla 0.08), `ThinFog` and `FogDensity` (0.003; Mistlands weather uses 0.02 to 0.05). "
                   "Changes apply straight away.",
         "background": (24, 40, 70),
