@@ -21,7 +21,7 @@ namespace CarelessWisp
     // in your inventory, as RossQoL's WisplightCarry does; the game never stacks
     // a second copy, so both can be on. The level is that of the best Wisplight
     // you carry, or with EquipRequired on, the one you have equipped.
-    [BepInPlugin("com.parallel53.carelesswisp", "CarelessWisp", "1.0.0")]
+    [BepInPlugin("com.parallel53.carelesswisp", "CarelessWisp", "1.0.1")]
     public class CarelessWispPlugin : BaseUnityPlugin
     {
         private const string WisplightPrefab = "Demister";

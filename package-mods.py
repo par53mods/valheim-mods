@@ -23,7 +23,7 @@ MODS = [
     {
         "name": "CarelessWisp",
         "folder": "CarelessWisp",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "description": "Lets you upgrade the Wisplight at the workbench. Each level clears mist farther around you and thins the Mistlands fog, and it works from your inventory without being equipped. All of it is configurable.",
         "readme": "The vanilla Wisplight can't be upgraded and clears mist 15 m around you. With this mod you can upgrade it at the workbench, up to level 5, and each level clears mist farther and thins more of the Mistlands fog, which still limits how far you see once the mist is gone. "
                   "From level 2, the cleared area stays centred on you rather than on the wandering wisp, and mist inside it fades out in about 1.5 seconds rather than lingering for up to 5.\n\n"
