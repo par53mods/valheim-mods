@@ -26,7 +26,7 @@ MODS = [
         "version": "1.0.0",
         "description": "Upgrade the Wisplight up to level 5 by default. Each level clears mist farther around you, up to 350 m, and thins more of the Mistlands fog. By default the Wisplight works from your inventory, no equipping needed.",
         "readme": "The vanilla Wisplight can't be upgraded and clears mist 15 m around you. With this mod you can upgrade it at the workbench, to level 5 by default, and each level clears mist farther and thins more of the Mistlands fog, which still limits how far you see once the mist is gone. "
-                  "From level 2, mist inside the cleared area fades out in about 1.5 seconds rather than lingering for up to 5.\n\n"
+                  "From level 2, the cleared area stays centred on you rather than on the wandering wisp, and mist inside it fades out in about 1.5 seconds rather than lingering for up to 5.\n\n"
                   "| Level | Mist cleared | Mistlands fog left | Upgrade cost |\n|---|---|---|---|\n"
                   "| 1 | 15 m (vanilla) | 100% | the vanilla recipe |\n"
                   "| 2 | 30 m | 85% | 5 wisps, 20 silver |\n"

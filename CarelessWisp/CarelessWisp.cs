@@ -54,6 +54,7 @@ namespace CarelessWisp
             new Dictionary<Piece.Requirement, ConfigEntry<string>>();
 
         private static Demister wisp;
+        private static Vector3 wispRest;
         private static int carriedEffect;
         private static int level = 1;
         private static float wispSeen = -10f;
@@ -148,6 +149,35 @@ namespace CarelessWisp
                 }
 
                 carriedEffect = 0;
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (WispActive && Player.m_localPlayer != null)
+            {
+                Centre(Player.m_localPlayer);
+            }
+        }
+
+        // The game moves the wisp ahead of you while you run and lets it swing back
+        // when you stop, and the clearing followed it, so its front edge pulled back.
+        // From level 2 the part that clears mist (the force field, apart from the
+        // wisp's light and flames) stays on you instead. Level 1 is left as vanilla.
+        private static void Centre(Player player)
+        {
+            if (wisp == null)
+            {
+                return;
+            }
+
+            if (EffectiveLevel >= 2)
+            {
+                wisp.transform.position = player.GetCenterPoint();
+            }
+            else
+            {
+                wisp.transform.localPosition = wispRest;
             }
         }
 
@@ -328,6 +358,10 @@ namespace CarelessWisp
             if (wisp == null || !wisp.transform.IsChildOf(ball.transform))
             {
                 wisp = ball.GetComponentInChildren<Demister>(true);
+                if (wisp != null)
+                {
+                    wispRest = wisp.transform.localPosition;
+                }
             }
 
             if (wisp == null || wisp.m_forceField == null)
@@ -347,6 +381,7 @@ namespace CarelessWisp
             bool push = current >= 2 && !FastClear.Value;
             wisp.m_forceField.gravity = -(push ? PushStrength.Value : VanillaPush);
             wispSeen = Time.time;
+            Centre(player);
 
             string state = "Wisplight level " + current + ": your wisp clears mist " + radius + " m around it.";
             if (state != logged)
