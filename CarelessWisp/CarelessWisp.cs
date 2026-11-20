@@ -84,11 +84,11 @@ namespace CarelessWisp
                 "Later levels use the last number.");
             SilverPerLevel = Config.Bind("Upgrades", "SilverPerLevel", "20, 30, 0, 0",
                 "Silver needed for each upgrade, from level 2. 20, 30, 0, 0 by default, so only the upgrades to levels 2 and 3 need it.");
-            EitrPerLevel = Config.Bind("Upgrades", "EitrPerLevel", "0, 0, 20, 40",
-                "Eitr needed for each upgrade, from level 2. 0, 0, 20, 40 by default, so only the upgrades to levels 4 and 5 need it.");
-            SoftTissuePerLevel = Config.Bind("Upgrades", "SoftTissuePerLevel", "0, 5, 10, 20",
-                "Soft tissue needed for each upgrade, from level 2. 0, 5, 10, 20 by default, so the upgrades from " +
-                "level 3 need something from the Mistlands.");
+            EitrPerLevel = Config.Bind("Upgrades", "EitrPerLevel", "0, 0, 20, 0",
+                "Eitr needed for each upgrade, from level 2. 0, 0, 20, 0 by default, so only the upgrade to level 4 needs it.");
+            SoftTissuePerLevel = Config.Bind("Upgrades", "SoftTissuePerLevel", "0, 10, 0, 0",
+                "Soft tissue needed for each upgrade, from level 2. 0, 10, 0, 0 by default, so the upgrade to " +
+                "level 3 needs something from the Mistlands.");
             CarapacePerLevel = Config.Bind("Upgrades", "MajesticCarapacePerLevel", "0, 0, 0, 1",
                 "Majestic carapace, the Seeker Queen's drop, needed for each upgrade, from level 2. 0, 0, 0, 1 by default, " +
                 "so level 5 waits until the Queen is beaten. She drops 5, and the artisan press extension needs 1.");
