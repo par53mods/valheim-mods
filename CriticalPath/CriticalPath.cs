@@ -2288,7 +2288,10 @@ namespace CriticalPath
                 default: tab = ""; break;
             }
 
-            string near = piece.m_craftingStation != null ? " near the " + Localized(piece.m_craftingStation.m_name) : "";
+            // Building with a hammer already means a workbench nearby, so only other
+            // stations, such as the stonecutter or Black forge, are named.
+            string near = piece.m_craftingStation != null && piece.m_craftingStation.m_name != "$piece_workbench"
+                ? " near the " + Localized(piece.m_craftingStation.m_name) : "";
             SapCollector collector = piece.GetComponent<SapCollector>();
             bool onRoot = collector != null && collector.m_mustConnectTo != null && collector.m_mustConnectTo.name == "YggdrasilRoot";
             string root = onRoot ? ", on a Yggdrasil root" : "";
