@@ -1,8 +1,9 @@
 # Changelog
 
-## 0.1.8 (2026-11-19)
+## 0.1.8 (2026-11-20)
 
 - Pieces now say they're built with your hammer, which tab they're on and which station they need nearby, instead of "Build at Workbench", which read as if the workbench made them. The Sap extractor also says it goes on a Yggdrasil root.
+- The panel hides while a chest or other container is open, so it no longer covers the container's window.
 
 ## 0.1.7 (2026-11-19)
 

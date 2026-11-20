@@ -632,11 +632,13 @@ namespace CriticalPath
             Refresh(player);
         }
 
-        // Shown beside the inventory screen's windows, never over them.
+        // Shown beside the inventory screen's windows, never over them, and hidden
+        // while a chest or other container is open, which needs the room.
         private void LateUpdate()
         {
             InventoryGui gui = InventoryGui.instance;
-            bool show = panelText != null && gui != null && InventoryGui.IsVisible() && !Splitting(gui);
+            bool show = panelText != null && gui != null && InventoryGui.IsVisible() && !Splitting(gui) &&
+                !gui.IsContainerOpen();
             if (panel == null)
             {
                 if (!show)
