@@ -1,5 +1,5 @@
 # Changelog
 
-## 1.0.0 (2026-11-19)
+## 1.0.0 (2026-11-20)
 
-- First release: by default your wisp clears mist 350 m around you instead of 15 m, removes mist inside that area at once, pushes mist away harder, and thins the Mistlands fog while it's out. It works whether the Wisplight is equipped or carried by a mod such as RossQoL.
+- First release. The Wisplight can be upgraded to level 5 by default. Each level widens the area your wisp clears of mist, from the vanilla 15 m at level 1 to 350 m at level 5, and thins more of the Mistlands fog. From level 2 mist inside that area disappears at once. Upgrades cost wisps and silver up to level 3, then wisps and Eitr. It works whether the Wisplight is equipped or carried by a mod such as RossQoL.

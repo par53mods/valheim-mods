@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Globalization;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
@@ -5,20 +7,32 @@ using UnityEngine;
 
 namespace CarelessWisp
 {
-    // Widens the area your own wisp clears of mist and clears it at once.
+    // Lets the Wisplight be upgraded, and each level widens the area your own
+    // wisp clears of mist and thins the Mistlands fog. Level 1 is the vanilla wisp.
     //
     // How the game's mist works (ParticleMist): no mist forms inside a wisp's
     // force field (Demister.m_forceField.endRange), new mist is drawn out to
     // 350 m from you, and each puff lasts up to 5 seconds. The vanilla wisp
-    // clears 15 m and pushes mist out very gently (gravity -0.08).
+    // clears 15 m and pushes mist out very gently (gravity -0.08). The biome's
+    // fog (EnvMan) is separate, and no vanilla wisp changes it.
     //
     // The wisp comes from the Wisplight's status effect (SE_Demister), which is
     // there whether the Wisplight is equipped or carried by another mod, such as
-    // RossQoL's WisplightCarry, so that is where this mod finds it.
+    // RossQoL's WisplightCarry, so that is where this mod finds it. The level is
+    // that of the best Wisplight you carry.
     [BepInPlugin("com.parallel53.carelesswisp", "CarelessWisp", "1.0.0")]
     public class CarelessWispPlugin : BaseUnityPlugin
     {
-        internal static ConfigEntry<float> Radius;
+        private const string WisplightPrefab = "Demister";
+        private const float VanillaPush = 0.08f;
+
+        internal static ConfigEntry<bool> UseLevels;
+        internal static ConfigEntry<int> MaxLevel;
+        internal static ConfigEntry<string> RadiusPerLevel;
+        internal static ConfigEntry<string> FogPerLevel;
+        internal static ConfigEntry<string> WispsPerLevel;
+        internal static ConfigEntry<string> SilverPerLevel;
+        internal static ConfigEntry<string> EitrPerLevel;
         internal static ConfigEntry<bool> ClearInstantly;
         internal static ConfigEntry<float> PushStrength;
         internal static ConfigEntry<bool> ThinFog;
@@ -30,43 +44,161 @@ namespace CarelessWisp
         private static readonly AccessTools.FieldRef<ParticleMist, ParticleSystem> MistParticles =
             AccessTools.FieldRefAccess<ParticleMist, ParticleSystem>("m_ps");
 
+        // The Wisplight recipe's parts this mod prices per level, by material.
+        private static readonly Dictionary<Piece.Requirement, ConfigEntry<string>> upgradeCosts =
+            new Dictionary<Piece.Requirement, ConfigEntry<string>>();
+
         private static Demister wisp;
+        private static int level = 1;
         private static float wispSeen = -10f;
-        private static float loggedRadius = -1f;
+        private static string logged = "";
         private static float fogBlend;
         private static ParticleSystem.Particle[] particles = new ParticleSystem.Particle[0];
 
         private void Awake()
         {
             Log = Logger;
-            Radius = Config.Bind("Wisp", "Radius", 350f, new ConfigDescription(
-                "How far around your wisp mist is cleared, in metres. 350 by default, the farthest the game " +
-                "draws mist from you. The vanilla Wisplight clears 15.",
-                new AcceptableValueRange<float>(15f, 1000f)));
+            UseLevels = Config.Bind("Levels", "UseLevels", true,
+                "Your best Wisplight's level picks the radius and fog below. On by default. Turn it off to always " +
+                "use the highest level's values, whatever your Wisplight's level.");
+            MaxLevel = Config.Bind("Levels", "MaxLevel", 5, new ConfigDescription(
+                "How far the Wisplight can be upgraded. 5 by default; the vanilla Wisplight can't be upgraded. " +
+                "Each level needs a workbench of that level.",
+                new AcceptableValueRange<int>(1, 5)));
+            RadiusPerLevel = Config.Bind("Levels", "RadiusPerLevel", "15, 50, 120, 220, 350",
+                "How far around your wisp mist is cleared at each level, in metres, from level 1. " +
+                "15, 50, 120, 220, 350 by default. 15 is the vanilla Wisplight; 350 is the farthest the game draws mist from you.");
+            FogPerLevel = Config.Bind("Levels", "FogPerLevel", "100, 75, 50, 25, 0",
+                "How much of the Mistlands fog is left while your wisp is out, at each level, as a percentage, from level 1. " +
+                "100, 75, 50, 25, 0 by default. 100 leaves the fog as it is; 0 thins it to FogDensity.");
+            WispsPerLevel = Config.Bind("Upgrades", "WispsPerLevel", "5, 10, 15, 20",
+                "Wisps needed to upgrade the Wisplight to level 2, 3, 4 and 5. 5, 10, 15, 20 by default. " +
+                "Later levels use the last number.");
+            SilverPerLevel = Config.Bind("Upgrades", "SilverPerLevel", "5, 5, 0, 0",
+                "Silver needed for each upgrade, from level 2. 5, 5, 0, 0 by default, so only the first two upgrades need it.");
+            EitrPerLevel = Config.Bind("Upgrades", "EitrPerLevel", "0, 0, 10, 15",
+                "Eitr needed for each upgrade, from level 2. 0, 0, 10, 15 by default, so only the upgrades to levels 4 and 5 need it.");
             ClearInstantly = Config.Bind("Wisp", "ClearInstantly", true,
-                "Mist inside the radius disappears at once. On by default. Turn it off to let the wisp push mist " +
-                "out instead, at PushStrength.");
+                "From level 2, mist inside the radius disappears at once. On by default. Turn it off to let the wisp " +
+                "push mist out instead, at PushStrength.");
             PushStrength = Config.Bind("Wisp", "PushStrength", 2f, new ConfigDescription(
-                "How hard the wisp pushes mist outward. 2 by default; the vanilla Wisplight pushes at 0.08.",
+                "How hard the wisp pushes mist outward from level 2. 2 by default; the vanilla Wisplight pushes at 0.08.",
                 new AcceptableValueRange<float>(0f, 20f)));
             ThinFog = Config.Bind("Fog", "ThinFog", true,
-                "While your wisp is out in the Mistlands, the biome's fog is thinned to FogDensity. On by default. " +
+                "Lets the Wisplight thin the Mistlands fog, as FogPerLevel sets. On by default. " +
                 "The vanilla Wisplight never changes the fog.");
             FogDensity = Config.Bind("Fog", "FogDensity", 0.003f, new ConfigDescription(
-                "Fog density used in the Mistlands while your wisp is out. 0.003 by default, the game's clear-weather " +
-                "fog. Mistlands weather uses 0.02 to 0.05. Fog that is already thinner is left alone.",
+                "The thinnest the Mistlands fog gets. 0.003 by default, the game's clear-weather fog. " +
+                "Mistlands weather uses 0.02 to 0.05.",
                 new AcceptableValueRange<float>(0f, 0.05f)));
+            MaxLevel.SettingChanged += (sender, args) => SetUpRecipe(ObjectDB.instance);
             new Harmony("com.parallel53.carelesswisp").PatchAll(typeof(CarelessWispPlugin));
         }
 
+        // A comma-separated setting, read at a position; past the end, the last value.
+        private static float ListValue(ConfigEntry<string> entry, int index)
+        {
+            float found = 0f;
+            int position = 0;
+            foreach (string part in entry.Value.Split(','))
+            {
+                if (float.TryParse(part.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float value))
+                {
+                    found = value;
+                    if (position == index)
+                    {
+                        break;
+                    }
+
+                    position++;
+                }
+            }
+
+            return found;
+        }
+
+        private static int EffectiveLevel => UseLevels.Value ? level : Mathf.Max(1, MaxLevel.Value);
+
         private static bool WispActive => wisp != null && Time.time - wispSeen < 0.5f;
+
+        // The Wisplight gets more levels, and each upgrade costs what the settings say.
+        // Materials it doesn't already use are added at 0 for crafting, so the first
+        // Wisplight costs what it always has.
+        [HarmonyPatch(typeof(ObjectDB), "Awake"), HarmonyPostfix]
+        private static void AfterObjectDBAwake(ObjectDB __instance)
+        {
+            SetUpRecipe(__instance);
+        }
+
+        [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.CopyOtherDB)), HarmonyPostfix]
+        private static void AfterCopyOtherDB(ObjectDB __instance)
+        {
+            SetUpRecipe(__instance);
+        }
+
+        private static void SetUpRecipe(ObjectDB db)
+        {
+            if (db == null || db.m_items == null || db.m_recipes == null)
+            {
+                return;
+            }
+
+            GameObject light = db.m_items.Find(item => item != null && item.name == WisplightPrefab);
+            Recipe recipe = db.m_recipes.Find(r => r != null && r.m_item != null && r.m_item.name == WisplightPrefab);
+            if (light == null || recipe == null)
+            {
+                return;
+            }
+
+            light.GetComponent<ItemDrop>().m_itemData.m_shared.m_maxQuality = Mathf.Max(1, MaxLevel.Value);
+            upgradeCosts.Clear();
+            Price(db, recipe, "Wisp", WispsPerLevel);
+            Price(db, recipe, "Silver", SilverPerLevel);
+            Price(db, recipe, "Eitr", EitrPerLevel);
+        }
+
+        private static void Price(ObjectDB db, Recipe recipe, string material, ConfigEntry<string> costs)
+        {
+            foreach (Piece.Requirement existing in recipe.m_resources)
+            {
+                if (existing.m_resItem != null && existing.m_resItem.name == material)
+                {
+                    upgradeCosts[existing] = costs;
+                    return;
+                }
+            }
+
+            GameObject prefab = db.m_items.Find(item => item != null && item.name == material);
+            ItemDrop drop = prefab != null ? prefab.GetComponent<ItemDrop>() : null;
+            if (drop == null)
+            {
+                Log.LogWarning("Couldn't find " + material + " for the Wisplight upgrades.");
+                return;
+            }
+
+            Piece.Requirement added = new Piece.Requirement { m_resItem = drop, m_amount = 0, m_amountPerLevel = 0, m_recover = true };
+            recipe.m_resources = recipe.m_resources.AddToArray(added);
+            upgradeCosts[added] = costs;
+        }
+
+        // The game asks each part for its amount at a level when showing, checking
+        // and taking an upgrade's cost.
+        [HarmonyPatch(typeof(Piece.Requirement), nameof(Piece.Requirement.GetAmount)), HarmonyPostfix]
+        private static void AfterGetAmount(Piece.Requirement __instance, int qualityLevel, ref int __result)
+        {
+            if (qualityLevel >= 2 && upgradeCosts.TryGetValue(__instance, out ConfigEntry<string> costs))
+            {
+                __result = Mathf.Max(0, Mathf.RoundToInt(ListValue(costs, qualityLevel - 2)));
+            }
+        }
 
         // Runs every frame for every Wisplight effect; only your own wisp is changed.
         // Other players see your wisp with the game's normal radius.
         [HarmonyPatch(typeof(SE_Demister), nameof(SE_Demister.UpdateStatusEffect)), HarmonyPostfix]
         private static void AfterWispUpdate(SE_Demister __instance)
         {
-            if (Player.m_localPlayer == null || __instance.m_character != Player.m_localPlayer)
+            Player player = Player.m_localPlayer;
+            if (player == null || __instance.m_character != player)
             {
                 return;
             }
@@ -87,15 +219,26 @@ namespace CarelessWisp
                 return;
             }
 
-            float radius = Radius.Value;
+            level = 1;
+            foreach (ItemDrop.ItemData item in player.GetInventory().GetAllItems())
+            {
+                if (item.m_dropPrefab != null && item.m_dropPrefab.name == WisplightPrefab)
+                {
+                    level = Mathf.Max(level, item.m_quality);
+                }
+            }
+
+            int current = EffectiveLevel;
+            float radius = Mathf.Max(1f, ListValue(RadiusPerLevel, current - 1));
             wisp.m_forceField.endRange = radius;
-            wisp.m_forceField.gravity = -PushStrength.Value;
+            wisp.m_forceField.gravity = -(current >= 2 ? PushStrength.Value : VanillaPush);
             wispSeen = Time.time;
 
-            if (!Mathf.Approximately(loggedRadius, radius))
+            string state = "Wisplight level " + current + ": your wisp clears mist " + radius + " m around it.";
+            if (state != logged)
             {
-                loggedRadius = radius;
-                Log.LogInfo("Your wisp clears mist " + radius + " m around it.");
+                logged = state;
+                Log.LogInfo(state);
             }
         }
 
@@ -119,7 +262,7 @@ namespace CarelessWisp
         [HarmonyPatch(typeof(ParticleMist), "Update"), HarmonyPostfix]
         private static void AfterMistUpdate(ParticleMist __instance)
         {
-            if (!ClearInstantly.Value || !WispActive)
+            if (!ClearInstantly.Value || !WispActive || EffectiveLevel < 2)
             {
                 return;
             }
@@ -164,7 +307,8 @@ namespace CarelessWisp
         [HarmonyPatch(typeof(EnvMan), "SetEnv"), HarmonyPostfix]
         private static void AfterSetEnv(EnvMan __instance, float dt)
         {
-            bool thin = ThinFog.Value && WispActive &&
+            float left = Mathf.Clamp(ListValue(FogPerLevel, EffectiveLevel - 1), 0f, 100f) / 100f;
+            bool thin = ThinFog.Value && WispActive && left < 1f &&
                 __instance.GetCurrentBiome() == Heightmap.Biome.Mistlands;
             fogBlend = Mathf.MoveTowards(fogBlend, thin ? 1f : 0f, dt);
             if (fogBlend <= 0f)
@@ -173,7 +317,8 @@ namespace CarelessWisp
             }
 
             float fog = RenderSettings.fogDensity;
-            RenderSettings.fogDensity = Mathf.Lerp(fog, Mathf.Min(fog, FogDensity.Value), fogBlend);
+            float thinned = Mathf.Min(fog, Mathf.Max(fog * left, FogDensity.Value));
+            RenderSettings.fogDensity = Mathf.Lerp(fog, thinned, fogBlend);
         }
     }
 }

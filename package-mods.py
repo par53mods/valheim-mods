@@ -24,16 +24,23 @@ MODS = [
         "name": "CarelessWisp",
         "folder": "CarelessWisp",
         "version": "1.0.0",
-        "description": "A wisp that doesn't hold back: by default it clears mist 350 m around you, at once, and thins the Mistlands fog while it's out. Works with the Wisplight equipped or carried.",
-        "readme": "By default your wisp clears the mist up to 350 m around you, the farthest the game draws mist, instead of the vanilla 15 m. "
-                  "Mist already inside that area disappears at once rather than fading over a few seconds. "
-                  "While your wisp is out in the Mistlands, the biome's fog is also thinned to the game's clear-weather fog, since the fog still limits how far you see once the mist is gone.\n\n"
-                  "It changes the wisp from the Wisplight's own effect, so it works whether the Wisplight is equipped or carried by a mod such as RossQoL's WisplightCarry. "
-                  "Remove Better Wisps if you use it; the two both set the wisp's radius.\n\n"
-                  "As with the vanilla Wisplight, creatures can see you through the area your wisp clears, so they can spot you from farther away. "
+        "description": "Upgrade the Wisplight up to level 5 by default. Each level clears mist farther around you, up to 350 m, and thins more of the Mistlands fog. Works with the Wisplight equipped or carried.",
+        "readme": "The vanilla Wisplight can't be upgraded and clears mist 15 m around you. With this mod you can upgrade it at the workbench, to level 5 by default, and each level clears mist farther and thins more of the Mistlands fog, which still limits how far you see once the mist is gone. "
+                  "From level 2, mist inside the cleared area disappears at once rather than fading over a few seconds.\n\n"
+                  "| Level | Mist cleared | Mistlands fog left | Upgrade cost |\n|---|---|---|---|\n"
+                  "| 1 | 15 m (vanilla) | 100% | the vanilla recipe |\n"
+                  "| 2 | 50 m | 75% | 5 wisps, 5 silver |\n"
+                  "| 3 | 120 m | 50% | 10 wisps, 5 silver |\n"
+                  "| 4 | 220 m | 25% | 15 wisps, 10 Eitr |\n"
+                  "| 5 | 350 m | clear-weather fog | 20 wisps, 15 Eitr |\n\n"
+                  "Each upgrade needs a workbench of the level you're upgrading to. 350 m is the farthest the game draws mist from you.\n\n"
+                  "Your best Wisplight counts, so it works whether the Wisplight is equipped or carried by a mod such as RossQoL's WisplightCarry. "
+                  "Remove Better Wisps if you use it; both change the Wisplight's levels and radius.\n\n"
+                  "As with the vanilla Wisplight, creatures can see you through the area your wisp clears, so at higher levels they can spot you from farther away. "
                   "Only your game changes; other players see your wisp clear its normal 15 m.\n\n"
-                  "Settings are in `com.parallel53.carelesswisp.cfg`: `Radius` (350), `ClearInstantly` (on), `PushStrength` (2; vanilla 0.08), "
-                  "`ThinFog` (on) and `FogDensity` (0.003; Mistlands weather uses 0.02 to 0.05). Changes apply straight away.",
+                  "Settings are in `com.parallel53.carelesswisp.cfg`: `UseLevels`, `MaxLevel`, `RadiusPerLevel`, `FogPerLevel`, `WispsPerLevel`, `SilverPerLevel`, `EitrPerLevel`, "
+                  "`ClearInstantly`, `PushStrength` (2 from level 2; vanilla 0.08), `ThinFog` and `FogDensity` (0.003; Mistlands weather uses 0.02 to 0.05). "
+                  "Changes apply straight away.",
         "background": (24, 40, 70),
         "ink": (150, 230, 255),
         "icon": [
