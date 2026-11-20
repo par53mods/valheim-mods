@@ -13,7 +13,7 @@ namespace CriticalPath
 {
     // Shows what to make next on the inventory screen, worked out from what this
     // character has discovered, so a character mid-game starts in the right place.
-    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.7")]
+    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.8")]
     public class CriticalPathPlugin : BaseUnityPlugin
     {
         private const string BuiltKey = "parallel53.criticalpath.built";
@@ -2104,12 +2104,10 @@ namespace CriticalPath
                 }
                 else if (Pieces.TryGetValue(id, out Piece piece))
                 {
-                    string costs = Costs(piece.m_resources);
-                    string at = piece.m_craftingStation != null ? " at " + Localized(piece.m_craftingStation.m_name) : "";
                     suggestion = new Suggestion
                     {
                         Name = Localized(piece.m_name),
-                        Detail = costs.Length > 0 ? "Build" + at + ": " + costs : "",
+                        Detail = BuildDetail(piece),
                         Reason = reason
                     };
                 }
@@ -2267,10 +2265,36 @@ namespace CriticalPath
             }
         }
 
-        private static Suggestion StationSuggestion(Piece piece, Dictionary<string, int> stock, string reason)
+        // Pieces are built with the hammer, from the tab the game files them under,
+        // and need their crafting station nearby; they never appear in a station's list.
+        private static string BuildDetail(Piece piece)
         {
             string costs = Costs(piece.m_resources);
-            string at = piece.m_craftingStation != null ? " at " + Localized(piece.m_craftingStation.m_name) : "";
+            if (costs.Length == 0)
+            {
+                return "";
+            }
+
+            string tab;
+            switch (piece.m_category)
+            {
+                case Piece.PieceCategory.Misc: tab = "Misc"; break;
+                case Piece.PieceCategory.Crafting: tab = "Crafting"; break;
+                case Piece.PieceCategory.BuildingWorkbench:
+                case Piece.PieceCategory.BuildingStonecutter: tab = "Building"; break;
+                case Piece.PieceCategory.Furniture: tab = "Furniture"; break;
+                default: tab = ""; break;
+            }
+
+            string near = piece.m_craftingStation != null ? " near the " + Localized(piece.m_craftingStation.m_name) : "";
+            SapCollector collector = piece.GetComponent<SapCollector>();
+            bool onRoot = collector != null && collector.m_mustConnectTo != null && collector.m_mustConnectTo.name == "YggdrasilRoot";
+            string root = onRoot ? ", on a Yggdrasil root" : "";
+            return "Build with your hammer" + (tab.Length > 0 ? " (" + tab + " tab)" : "") + near + root + ": " + costs;
+        }
+
+        private static Suggestion StationSuggestion(Piece piece, Dictionary<string, int> stock, string reason)
+        {
             return new Suggestion
             {
                 Id = piece.m_name,
@@ -2278,7 +2302,7 @@ namespace CriticalPath
                 Name = Localized(piece.m_name),
                 Tier = Tier.Station,
                 Reason = reason,
-                Detail = costs.Length > 0 ? "Build" + at + ": " + costs : "",
+                Detail = BuildDetail(piece),
                 Ready = PathRules.HasAll(piece.m_resources
                     .Where(requirement => Counts(requirement))
                     .Select(requirement => new KeyValuePair<string, int>(

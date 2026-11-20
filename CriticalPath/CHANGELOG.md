@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.8 (2026-11-19)
+
+- Pieces now say they're built with your hammer, which tab they're on and which station they need nearby, instead of "Build at Workbench", which read as if the workbench made them. The Sap extractor also says it goes on a Yggdrasil root.
+
 ## 0.1.7 (2026-11-19)
 
 - Guides you through the Mistlands: the Wisplight, Black forge, Sap extractor, Eitr refinery, Galdr table and feather cape, in that order, each as its next step.
