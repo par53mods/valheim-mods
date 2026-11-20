@@ -21,6 +21,41 @@ ICON_SIZE = 256
 # Each icon is a 16x16 drawing: "#" takes the mod's ink colour, "." its background.
 MODS = [
     {
+        "name": "CarelessWisp",
+        "folder": "CarelessWisp",
+        "version": "1.0.0",
+        "description": "A wisp that doesn't hold back: by default it clears mist 350 m around you, at once, and thins the Mistlands fog while it's out. Works with the Wisplight equipped or carried.",
+        "readme": "By default your wisp clears the mist up to 350 m around you, the farthest the game draws mist, instead of the vanilla 15 m. "
+                  "Mist already inside that area disappears at once rather than fading over a few seconds. "
+                  "While your wisp is out in the Mistlands, the biome's fog is also thinned to the game's clear-weather fog, since the fog still limits how far you see once the mist is gone.\n\n"
+                  "It changes the wisp from the Wisplight's own effect, so it works whether the Wisplight is equipped or carried by a mod such as RossQoL's WisplightCarry. "
+                  "Remove Better Wisps if you use it; the two both set the wisp's radius.\n\n"
+                  "As with the vanilla Wisplight, creatures can see you through the area your wisp clears, so they can spot you from farther away. "
+                  "Only your game changes; other players see your wisp clear its normal 15 m.\n\n"
+                  "Settings are in `com.parallel53.carelesswisp.cfg`: `Radius` (350), `ClearInstantly` (on), `PushStrength` (2; vanilla 0.08), "
+                  "`ThinFog` (on) and `FogDensity` (0.003; Mistlands weather uses 0.02 to 0.05). Changes apply straight away.",
+        "background": (24, 40, 70),
+        "ink": (150, 230, 255),
+        "icon": [
+            "................",
+            "..#.........#...",
+            "................",
+            "......####......",
+            ".....######.....",
+            "....########....",
+            "#...########...#",
+            "....########....",
+            "....########....",
+            ".....######.....",
+            "......####......",
+            "................",
+            "..#.........#...",
+            "................",
+            "#......#.......#",
+            "................",
+        ],
+    },
+    {
         "name": "ChestSalvage",
         "folder": "ChestSalvage",
         "version": "1.0.2",

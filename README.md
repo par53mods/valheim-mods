@@ -13,6 +13,7 @@ BepInEx mods for Valheim, published on Thunderstore under `parallel53`.
 | [SpeedBoat](SpeedBoat) | Full sail not full enough? Two extra sail speeds above Full, a fast reverse for docking in a hurry, and rowing speed you can tune. A label by the speed indicator shows the level. |
 | [DudeWheresMySpear](DudeWheresMySpear) | Dropped your spear in the tall grass again? Makes the sparkles on dropped items brighter, more plentiful and wider spread, so loot is easier to spot. |
 | [ShutupPortal](ShutupPortal) | Silences portals by default: the sound when one activates and the hum while it's active. Both volumes are settings. |
+| [CarelessWisp](CarelessWisp) | A wisp that doesn't hold back: by default it clears mist 350 m around you, at once, and thins the Mistlands fog while it's out. Works with the Wisplight equipped or carried. |
 | [BlueFlame](BlueFlame) | Campfires, hearths, torches, braziers, portals and crafting stations burn blue like the Standing Blue-burning Iron Torch by default, blue light included, and the teleport swirl turns blue too. |
 
 ## Building
