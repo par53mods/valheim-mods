@@ -259,6 +259,49 @@ namespace CarelessWisp
             }
         }
 
+        // The Wisplight's tooltip says what its level does and what the next one
+        // brings. The workbench shows the level an upgrade would reach.
+        [HarmonyPatch(typeof(ItemDrop.ItemData), nameof(ItemDrop.ItemData.GetTooltip),
+            new[] { typeof(ItemDrop.ItemData), typeof(int), typeof(bool), typeof(float), typeof(int), typeof(bool) }), HarmonyPostfix]
+        private static void AfterGetTooltip(ItemDrop.ItemData item, int qualityLevel, ref string __result)
+        {
+            if (item == null || item.m_dropPrefab == null || item.m_dropPrefab.name != WisplightPrefab)
+            {
+                return;
+            }
+
+            int max = Mathf.Max(1, MaxLevel.Value);
+            int shown = UseLevels.Value ? Mathf.Clamp(qualityLevel, 1, max) : max;
+            string text = "\n\nWisp clears mist <color=orange>" + Radius(shown) + " m</color> around you" + FogText(shown);
+            if (UseLevels.Value && shown < max)
+            {
+                text += "\nNext level: " + Radius(shown + 1) + " m" + FogText(shown + 1);
+            }
+
+            if (!EquipRequired.Value)
+            {
+                text += "\nWorks from your inventory; no need to equip it.";
+            }
+
+            __result += text;
+        }
+
+        private static string Radius(int atLevel)
+        {
+            return Mathf.Max(1f, ListValue(RadiusPerLevel, atLevel - 1)).ToString("0", CultureInfo.InvariantCulture);
+        }
+
+        private static string FogText(int atLevel)
+        {
+            float left = Mathf.Clamp(ListValue(FogPerLevel, atLevel - 1), 0f, 100f);
+            if (!ThinFog.Value || left >= 100f)
+            {
+                return "";
+            }
+
+            return left <= 0f ? ", Mistlands fog thinned to clear weather" : ", " + left.ToString("0", CultureInfo.InvariantCulture) + "% of the Mistlands fog left";
+        }
+
         // Runs every frame for every Wisplight effect; only your own wisp is changed.
         // Other players see your wisp with the game's normal radius.
         [HarmonyPatch(typeof(SE_Demister), nameof(SE_Demister.UpdateStatusEffect)), HarmonyPostfix]

@@ -33,7 +33,7 @@ MODS = [
                   "| 3 | 70 m | 65% | 10 wisps, 30 silver, 10 soft tissue |\n"
                   "| 4 | 200 m | 30% | 15 wisps, 20 Eitr |\n"
                   "| 5 | 350 m | clear-weather fog | 30 wisps, 1 majestic carapace |\n\n"
-                  "Each upgrade needs a workbench of the level you're upgrading to. Level 5 needs a majestic carapace, so it waits until the Seeker Queen is beaten; she drops 5, and the artisan press extension needs 1. 350 m is the farthest the game draws mist from you.\n\n"
+                  "The Wisplight's tooltip shows what its level does and what the next level brings. Each upgrade needs a workbench of the level you're upgrading to. Level 5 needs a majestic carapace, so it waits until the Seeker Queen is beaten; she drops 5, and the artisan press extension needs 1. 350 m is the farthest the game draws mist from you.\n\n"
                   "By default a Wisplight anywhere in your inventory gives you its wisp without taking the utility slot, and the best one you carry sets the level. "
                   "Turn on `EquipRequired` to need it equipped as in vanilla. It also works alongside RossQoL's WisplightCarry. "
                   "Remove Better Wisps if you use it; both change the Wisplight's levels and radius.\n\n"
