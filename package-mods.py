@@ -26,7 +26,7 @@ MODS = [
         "version": "1.0.0",
         "description": "Upgrade the Wisplight up to level 5 by default. Each level clears mist farther around you, up to 350 m, and thins more of the Mistlands fog. By default the Wisplight works from your inventory, no equipping needed.",
         "readme": "The vanilla Wisplight can't be upgraded and clears mist 15 m around you. With this mod you can upgrade it at the workbench, to level 5 by default, and each level clears mist farther and thins more of the Mistlands fog, which still limits how far you see once the mist is gone. "
-                  "From level 2, mist inside the cleared area disappears at once rather than fading over a few seconds.\n\n"
+                  "From level 2, mist inside the cleared area fades out in about 1.5 seconds rather than lingering for up to 5.\n\n"
                   "| Level | Mist cleared | Mistlands fog left | Upgrade cost |\n|---|---|---|---|\n"
                   "| 1 | 15 m (vanilla) | 100% | the vanilla recipe |\n"
                   "| 2 | 30 m | 85% | 5 wisps, 20 silver |\n"
@@ -40,7 +40,7 @@ MODS = [
                   "As with the vanilla Wisplight, creatures can see you through the area your wisp clears, so at higher levels they can spot you from farther away. "
                   "Only your game changes; other players see your wisp clear its normal 15 m.\n\n"
                   "Settings are in `com.parallel53.carelesswisp.cfg`: `EquipRequired` (off), `UseLevels`, `MaxLevel`, `RadiusPerLevel`, `FogPerLevel`, `WispsPerLevel`, `SilverPerLevel`, `EitrPerLevel`, `SoftTissuePerLevel`, `MajesticCarapacePerLevel`, "
-                  "`ClearInstantly`, `PushStrength` (2, used only with `ClearInstantly` off; vanilla 0.08), `ThinFog` and `FogDensity` (0.003; Mistlands weather uses 0.02 to 0.05). "
+                  "`FastClear`, `ClearSeconds` (1.5; 0 clears at once), `PushStrength` (2, used only with `FastClear` off; vanilla 0.08), `ThinFog` and `FogDensity` (0.003; Mistlands weather uses 0.02 to 0.05). "
                   "Changes apply straight away.",
         "background": (24, 40, 70),
         "ink": (150, 230, 255),

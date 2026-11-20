@@ -37,7 +37,8 @@ namespace CarelessWisp
         internal static ConfigEntry<string> EitrPerLevel;
         internal static ConfigEntry<string> SoftTissuePerLevel;
         internal static ConfigEntry<string> CarapacePerLevel;
-        internal static ConfigEntry<bool> ClearInstantly;
+        internal static ConfigEntry<bool> FastClear;
+        internal static ConfigEntry<float> ClearSeconds;
         internal static ConfigEntry<float> PushStrength;
         internal static ConfigEntry<bool> ThinFog;
         internal static ConfigEntry<float> FogDensity;
@@ -92,11 +93,15 @@ namespace CarelessWisp
             CarapacePerLevel = Config.Bind("Upgrades", "MajesticCarapacePerLevel", "0, 0, 0, 1",
                 "Majestic carapace, the Seeker Queen's drop, needed for each upgrade, from level 2. 0, 0, 0, 1 by default, " +
                 "so level 5 waits until the Queen is beaten. She drops 5, and the artisan press extension needs 1.");
-            ClearInstantly = Config.Bind("Wisp", "ClearInstantly", true,
-                "From level 2, mist inside the radius disappears at once. On by default. Turn it off to let the wisp " +
+            FastClear = Config.Bind("Wisp", "FastClear", true,
+                "From level 2, mist inside the radius fades out over ClearSeconds. On by default. Turn it off to let the wisp " +
                 "push mist out instead, at PushStrength.");
+            ClearSeconds = Config.Bind("Wisp", "ClearSeconds", 1.5f, new ConfigDescription(
+                "How long mist inside the radius takes to fade out with FastClear on, in seconds. 1.5 by default; " +
+                "0 removes it at once. Without FastClear, the game takes up to 5 seconds.",
+                new AcceptableValueRange<float>(0f, 5f)));
             PushStrength = Config.Bind("Wisp", "PushStrength", 2f, new ConfigDescription(
-                "How hard the wisp pushes mist outward from level 2 when ClearInstantly is off. 2 by default; the vanilla " +
+                "How hard the wisp pushes mist outward from level 2 when FastClear is off. 2 by default; the vanilla " +
                 "Wisplight pushes at 0.08. Stronger pushes clear faster but throw mist past the edge for a moment.",
                 new AcceptableValueRange<float>(0f, 20f)));
             ThinFog = Config.Bind("Fog", "ThinFog", true,
@@ -338,8 +343,8 @@ namespace CarelessWisp
             wisp.m_forceField.endRange = radius;
             // A strong push throws the mist the game spawns at the clearing's edge
             // past the radius while you move, and it drifts back when you stop.
-            // Instant clearing doesn't need it, so the edge keeps the vanilla push.
-            bool push = current >= 2 && !ClearInstantly.Value;
+            // FastClear doesn't need it, so the edge keeps the vanilla push.
+            bool push = current >= 2 && !FastClear.Value;
             wisp.m_forceField.gravity = -(push ? PushStrength.Value : VanillaPush);
             wispSeen = Time.time;
 
@@ -366,12 +371,12 @@ namespace CarelessWisp
             return radius <= distance + __instance.m_maxDistance;
         }
 
-        // Mist already inside the radius is removed, so the clearing appears at once
-        // instead of waiting up to 5 seconds for each puff to fade.
+        // Mist already inside the radius fades out over ClearSeconds, instead of
+        // lingering for up to 5 seconds or vanishing in a single frame.
         [HarmonyPatch(typeof(ParticleMist), "Update"), HarmonyPostfix]
         private static void AfterMistUpdate(ParticleMist __instance)
         {
-            if (!ClearInstantly.Value || !WispActive || EffectiveLevel < 2)
+            if (!FastClear.Value || !WispActive || EffectiveLevel < 2)
             {
                 return;
             }
@@ -394,15 +399,29 @@ namespace CarelessWisp
             float range = wisp.m_forceField.endRange;
             float rangeSquared = range * range;
             bool changed = false;
+            float seconds = ClearSeconds.Value;
+            int fade = seconds <= 0f ? 255 : Mathf.Max(1, Mathf.CeilToInt(255f * Time.deltaTime / seconds));
 
             for (int i = 0; i < count; i++)
             {
                 Vector3 position = local ? frame.TransformPoint(particles[i].position) : particles[i].position;
-                if ((position - centre).sqrMagnitude < rangeSquared && particles[i].remainingLifetime > 0f)
+                if ((position - centre).sqrMagnitude >= rangeSquared || particles[i].remainingLifetime <= 0f)
+                {
+                    continue;
+                }
+
+                Color32 colour = particles[i].startColor;
+                if (colour.a <= fade)
                 {
                     particles[i].remainingLifetime = 0f;
-                    changed = true;
                 }
+                else
+                {
+                    colour.a = (byte)(colour.a - fade);
+                    particles[i].startColor = colour;
+                }
+
+                changed = true;
             }
 
             if (changed)
