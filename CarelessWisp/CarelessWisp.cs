@@ -16,16 +16,18 @@ namespace CarelessWisp
     // clears 15 m and pushes mist out very gently (gravity -0.08). The biome's
     // fog (EnvMan) is separate, and no vanilla wisp changes it.
     //
-    // The wisp comes from the Wisplight's status effect (SE_Demister), which is
-    // there whether the Wisplight is equipped or carried by another mod, such as
-    // RossQoL's WisplightCarry, so that is where this mod finds it. The level is
-    // that of the best Wisplight you carry.
+    // The wisp comes from the Wisplight's status effect (SE_Demister). With
+    // EquipRequired off, this mod adds that effect while a Wisplight is anywhere
+    // in your inventory, as RossQoL's WisplightCarry does; the game never stacks
+    // a second copy, so both can be on. The level is that of the best Wisplight
+    // you carry, or with EquipRequired on, the one you have equipped.
     [BepInPlugin("com.parallel53.carelesswisp", "CarelessWisp", "1.0.0")]
     public class CarelessWispPlugin : BaseUnityPlugin
     {
         private const string WisplightPrefab = "Demister";
         private const float VanillaPush = 0.08f;
 
+        internal static ConfigEntry<bool> EquipRequired;
         internal static ConfigEntry<bool> UseLevels;
         internal static ConfigEntry<int> MaxLevel;
         internal static ConfigEntry<string> RadiusPerLevel;
@@ -49,6 +51,7 @@ namespace CarelessWisp
             new Dictionary<Piece.Requirement, ConfigEntry<string>>();
 
         private static Demister wisp;
+        private static int carriedEffect;
         private static int level = 1;
         private static float wispSeen = -10f;
         private static string logged = "";
@@ -58,6 +61,9 @@ namespace CarelessWisp
         private void Awake()
         {
             Log = Logger;
+            EquipRequired = Config.Bind("Wisp", "EquipRequired", false,
+                "Off by default: a Wisplight anywhere in your inventory gives you its wisp, without using the utility " +
+                "slot, and the best one you carry sets the level. On: only an equipped Wisplight gives a wisp and sets the level.");
             UseLevels = Config.Bind("Levels", "UseLevels", true,
                 "Your best Wisplight's level picks the radius and fog below. On by default. Turn it off to always " +
                 "use the highest level's values, whatever your Wisplight's level.");
@@ -93,6 +99,57 @@ namespace CarelessWisp
                 new AcceptableValueRange<float>(0f, 0.05f)));
             MaxLevel.SettingChanged += (sender, args) => SetUpRecipe(ObjectDB.instance);
             new Harmony("com.parallel53.carelesswisp").PatchAll(typeof(CarelessWispPlugin));
+        }
+
+        // Gives you the wisp while a Wisplight is carried, and takes back only a wisp
+        // this mod gave once the Wisplight is gone or EquipRequired is turned on.
+        private void Update()
+        {
+            Player player = Player.m_localPlayer;
+            if (player == null)
+            {
+                carriedEffect = 0;
+                return;
+            }
+
+            SEMan effects = player.GetSEMan();
+            ItemDrop.ItemData carried = BestWisplight(player, false);
+            StatusEffect effect = carried != null ? carried.m_shared.m_equipStatusEffect : null;
+            if (!EquipRequired.Value && effect != null)
+            {
+                if (!effects.HaveStatusEffect(effect.NameHash()))
+                {
+                    effects.AddStatusEffect(effect);
+                    carriedEffect = effect.NameHash();
+                }
+
+                return;
+            }
+
+            if (carriedEffect != 0)
+            {
+                if (BestWisplight(player, true) == null)
+                {
+                    effects.RemoveStatusEffect(carriedEffect, true);
+                }
+
+                carriedEffect = 0;
+            }
+        }
+
+        private static ItemDrop.ItemData BestWisplight(Player player, bool equippedOnly)
+        {
+            ItemDrop.ItemData best = null;
+            foreach (ItemDrop.ItemData item in player.GetInventory().GetAllItems())
+            {
+                if (item.m_dropPrefab != null && item.m_dropPrefab.name == WisplightPrefab &&
+                    (!equippedOnly || item.m_equipped) && (best == null || item.m_quality > best.m_quality))
+                {
+                    best = item;
+                }
+            }
+
+            return best;
         }
 
         // A comma-separated setting, read at a position; past the end, the last value.
@@ -219,14 +276,8 @@ namespace CarelessWisp
                 return;
             }
 
-            level = 1;
-            foreach (ItemDrop.ItemData item in player.GetInventory().GetAllItems())
-            {
-                if (item.m_dropPrefab != null && item.m_dropPrefab.name == WisplightPrefab)
-                {
-                    level = Mathf.Max(level, item.m_quality);
-                }
-            }
+            ItemDrop.ItemData light = BestWisplight(player, EquipRequired.Value);
+            level = light != null ? light.m_quality : 1;
 
             int current = EffectiveLevel;
             float radius = Mathf.Max(1f, ListValue(RadiusPerLevel, current - 1));
