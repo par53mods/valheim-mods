@@ -80,10 +80,10 @@ namespace CarelessWisp
             WispsPerLevel = Config.Bind("Upgrades", "WispsPerLevel", "5, 10, 15, 20",
                 "Wisps needed to upgrade the Wisplight to level 2, 3, 4 and 5. 5, 10, 15, 20 by default. " +
                 "Later levels use the last number.");
-            SilverPerLevel = Config.Bind("Upgrades", "SilverPerLevel", "5, 5, 0, 0",
-                "Silver needed for each upgrade, from level 2. 5, 5, 0, 0 by default, so only the first two upgrades need it.");
-            EitrPerLevel = Config.Bind("Upgrades", "EitrPerLevel", "0, 0, 10, 15",
-                "Eitr needed for each upgrade, from level 2. 0, 0, 10, 15 by default, so only the upgrades to levels 4 and 5 need it.");
+            SilverPerLevel = Config.Bind("Upgrades", "SilverPerLevel", "20, 30, 0, 0",
+                "Silver needed for each upgrade, from level 2. 20, 30, 0, 0 by default, so only the upgrades to levels 2 and 3 need it.");
+            EitrPerLevel = Config.Bind("Upgrades", "EitrPerLevel", "0, 0, 20, 25",
+                "Eitr needed for each upgrade, from level 2. 0, 0, 20, 25 by default, so only the upgrades to levels 4 and 5 need it.");
             ClearInstantly = Config.Bind("Wisp", "ClearInstantly", true,
                 "From level 2, mist inside the radius disappears at once. On by default. Turn it off to let the wisp " +
                 "push mist out instead, at PushStrength.");
