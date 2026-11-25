@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.9 (2026-11-24)
+
+- Fix: a station upgrade the game hadn't shown you yet was never suggested, such as the Black forge vise, which only shows once you have a mechanical spring. It now suggests the first thing to make for it, such as the mechanical spring at the artisan table.
+
 ## 0.1.8 (2026-11-20)
 
 - Pieces now say they're built with your hammer, which tab they're on and, when it isn't the workbench, which station they need nearby, instead of "Build at Workbench", which read as if the workbench made them. The Sap extractor also says it goes on a Yggdrasil root.

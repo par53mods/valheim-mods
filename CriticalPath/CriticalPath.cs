@@ -13,7 +13,7 @@ namespace CriticalPath
 {
     // Shows what to make next on the inventory screen, worked out from what this
     // character has discovered, so a character mid-game starts in the right place.
-    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.8")]
+    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.9")]
     public class CriticalPathPlugin : BaseUnityPlugin
     {
         private const string BuiltKey = "parallel53.criticalpath.built";
@@ -2232,8 +2232,12 @@ namespace CriticalPath
                 string station = extension.m_craftingStation.m_name;
                 if (!near.Contains(station) && known.ContainsKey(station))
                 {
-                    yield return StationSuggestion(piece, stock, "Raises your " + Localized(station) + " a level. Build it next to the " +
-                        Localized(station) + ".");
+                    Suggestion suggestion = ExtensionSuggestion(player, plan, piece, stock, station, "Raises your " +
+                        Localized(station) + " a level. Build it next to the " + Localized(station) + ".");
+                    if (suggestion != null)
+                    {
+                        yield return suggestion;
+                    }
                 }
             }
 
@@ -2253,7 +2257,7 @@ namespace CriticalPath
                         StationExtension extension = piece.GetComponent<StationExtension>();
                         return extension != null && extension.m_craftingStation != null &&
                             extension.m_craftingStation.m_name == station.m_name &&
-                            !attached.Contains(piece.m_name) && player.IsRecipeKnown(piece.m_name);
+                            !attached.Contains(piece.m_name);
                     })
                     .OrderBy(piece => Materials(piece.m_resources, 1))
                     .ToList();
@@ -2261,10 +2265,29 @@ namespace CriticalPath
                 string stationName = Localized(station.m_name);
                 foreach (Piece piece in missing)
                 {
-                    yield return StationSuggestion(piece, stock, "Raises your " + stationName + " from level " + level +
-                        " to " + (level + 1) + ". Build it next to the " + stationName + ".");
+                    Suggestion suggestion = ExtensionSuggestion(player, plan, piece, stock, station.m_name, "Raises your " +
+                        stationName + " from level " + level + " to " + (level + 1) + ". Build it next to the " + stationName + ".");
+                    if (suggestion != null)
+                    {
+                        yield return suggestion;
+                    }
                 }
             }
+        }
+
+        // The game only shows an extension once you have all its materials, such as
+        // the Black forge vise once you have a mechanical spring, so for one not yet
+        // shown this suggests the first thing to make or find for it instead.
+        private static Suggestion ExtensionSuggestion(Player player, Plan plan, Piece piece, Dictionary<string, int> stock,
+            string station, string reason)
+        {
+            if (player.IsRecipeKnown(piece.m_name))
+            {
+                return StationSuggestion(piece, stock, reason);
+            }
+
+            return plan.ForGoal(piece.m_name, piece.m_name, plan.Planner.Make(piece.m_name), Tier.Station,
+                Localized(piece.m_name) + ", which raises your " + Localized(station) + " a level", reason);
         }
 
         // Pieces are built with the hammer, from the tab the game files them under,
