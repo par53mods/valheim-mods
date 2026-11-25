@@ -1147,7 +1147,7 @@ namespace CriticalPath
                 }
             }
 
-            suggestions.AddRange(Comfort(plan.Pieces.Values.Where(piece => player.IsRecipeKnown(piece.m_name)).ToList(), built));
+            suggestions.AddRange(Comfort(player, plan, built));
             suggestions.AddRange(StationUpgrades(player, plan, nearby, stock, built, journey));
 
             foreach (Suggestion suggestion in suggestions)
@@ -2170,9 +2170,15 @@ namespace CriticalPath
                 .Where(piece => piece != null && piece.m_enabled);
         }
 
-        private static IEnumerable<Suggestion> Comfort(List<Piece> pieces, HashSet<string> built)
+        // The game only shows a piece once you have all its materials, such as the
+        // Dragon bed once you have iron nails, so one not yet shown counts when it can
+        // be worked towards, and suggests the first thing to make for it.
+        private static IEnumerable<Suggestion> Comfort(Player player, Plan plan, HashSet<string> built)
         {
-            List<Piece> comfort = pieces.Where(piece => piece.m_comfort > 0).ToList();
+            List<Piece> comfort = plan.Pieces.Values
+                .Where(piece => piece.m_comfort > 0 &&
+                    (player.IsRecipeKnown(piece.m_name) || plan.Planner.Make(piece.m_name) != null))
+                .ToList();
             List<ComfortPiece> rows = comfort
                 .Select(piece => new ComfortPiece
                 {
@@ -2186,6 +2192,12 @@ namespace CriticalPath
             return PathRules.ComfortToBuild(rows).Select(id =>
             {
                 Piece piece = comfort.First(candidate => candidate.m_name == id);
+                if (!player.IsRecipeKnown(id))
+                {
+                    return plan.ForGoal(id, id, plan.Planner.Make(id), Tier.Comfort, Localized(id),
+                        "Adds " + piece.m_comfort + " comfort.");
+                }
+
                 string costs = Costs(piece.m_resources);
                 return new Suggestion
                 {

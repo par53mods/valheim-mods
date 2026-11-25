@@ -3,6 +3,7 @@
 ## 0.1.9 (2026-11-24)
 
 - Fix: a station upgrade the game hadn't shown you yet was never suggested, such as the Black forge vise, which only shows once you have a mechanical spring. It now suggests the first thing to make for it, such as the mechanical spring at the artisan table, or the Grinding wheel's sharpening stone at the stonecutter. When it waits on a material you haven't found yet, such as chain for the Forge bellows, it says where to look, from your current biome's list or an earlier one's.
+- Fix: comfort suggestions skipped pieces the game hadn't shown you yet, such as the Dragon bed, which only shows once you have iron nails. They now suggest the first thing to make for them.
 
 ## 0.1.8 (2026-11-20)
 
