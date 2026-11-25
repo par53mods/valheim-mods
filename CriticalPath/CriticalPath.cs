@@ -1148,7 +1148,7 @@ namespace CriticalPath
             }
 
             suggestions.AddRange(Comfort(plan.Pieces.Values.Where(piece => player.IsRecipeKnown(piece.m_name)).ToList(), built));
-            suggestions.AddRange(StationUpgrades(player, plan, nearby, stock, built));
+            suggestions.AddRange(StationUpgrades(player, plan, nearby, stock, built, journey));
 
             foreach (Suggestion suggestion in suggestions)
             {
@@ -2203,7 +2203,7 @@ namespace CriticalPath
         // for the ones you have. A station nearby is checked for what its
         // highest-level copy is missing; one elsewhere, for extensions never built.
         private static IEnumerable<Suggestion> StationUpgrades(Player player, Plan plan, List<Piece> nearby,
-            Dictionary<string, int> stock, HashSet<string> built)
+            Dictionary<string, int> stock, HashSet<string> built, Journey journey)
         {
             List<CraftingStation> stations = nearby
                 .Select(piece => piece.GetComponent<CraftingStation>())
@@ -2232,7 +2232,7 @@ namespace CriticalPath
                 string station = extension.m_craftingStation.m_name;
                 if (!near.Contains(station) && known.ContainsKey(station))
                 {
-                    Suggestion suggestion = ExtensionSuggestion(player, plan, piece, stock, station, "Raises your " +
+                    Suggestion suggestion = ExtensionSuggestion(player, plan, journey, piece, stock, station, "Raises your " +
                         Localized(station) + " a level. Build it next to the " + Localized(station) + ".");
                     if (suggestion != null)
                     {
@@ -2265,7 +2265,7 @@ namespace CriticalPath
                 string stationName = Localized(station.m_name);
                 foreach (Piece piece in missing)
                 {
-                    Suggestion suggestion = ExtensionSuggestion(player, plan, piece, stock, station.m_name, "Raises your " +
+                    Suggestion suggestion = ExtensionSuggestion(player, plan, journey, piece, stock, station.m_name, "Raises your " +
                         stationName + " from level " + level + " to " + (level + 1) + ". Build it next to the " + stationName + ".");
                     if (suggestion != null)
                     {
@@ -2277,17 +2277,19 @@ namespace CriticalPath
 
         // The game only shows an extension once you have all its materials, such as
         // the Black forge vise once you have a mechanical spring, so for one not yet
-        // shown this suggests the first thing to make or find for it instead.
-        private static Suggestion ExtensionSuggestion(Player player, Plan plan, Piece piece, Dictionary<string, int> stock,
-            string station, string reason)
+        // shown this suggests the first thing to make for it instead, or the material
+        // still to be found when this biome's list or an earlier one's says where.
+        private static Suggestion ExtensionSuggestion(Player player, Plan plan, Journey journey, Piece piece,
+            Dictionary<string, int> stock, string station, string reason)
         {
             if (player.IsRecipeKnown(piece.m_name))
             {
                 return StationSuggestion(piece, stock, reason);
             }
 
-            return plan.ForGoal(piece.m_name, piece.m_name, plan.Planner.Make(piece.m_name), Tier.Station,
-                Localized(piece.m_name) + ", which raises your " + Localized(station) + " a level", reason);
+            string goalName = Localized(piece.m_name) + ", which raises your " + Localized(station) + " a level";
+            return plan.ForGoal(piece.m_name, piece.m_name, plan.Planner.Make(piece.m_name), Tier.Station, goalName, reason) ??
+                FindFor(plan, journey, piece.m_name, goalName, Tier.Station);
         }
 
         // Pieces are built with the hammer, from the tab the game files them under,
