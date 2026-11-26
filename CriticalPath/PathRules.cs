@@ -362,6 +362,12 @@ namespace CriticalPath
             return batch;
         }
 
+        // Mostly mage armor: at least two of helmet, chest and legs add eitr regen.
+        public static bool MostlyMage(IEnumerable<float> eitrRegen)
+        {
+            return eitrRegen.Count(regen => regen > 0f) >= 2;
+        }
+
         // Takes the cheapest armor per slot, best first, and stops once it is enough.
         public static List<string> KeyArmor(IEnumerable<ArmorOption> options, float needed)
         {

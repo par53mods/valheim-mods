@@ -231,6 +231,9 @@ public static class PathRulesTests
         Check("stops once armor is enough", "upgradeHelm,bronzeChest",
             string.Join(",", PathRules.KeyArmor(armor, 7f).ToArray()));
         Check("nothing needed", 0, PathRules.KeyArmor(armor, 0f).Count);
+        Check("two mage pieces make a mage", true, PathRules.MostlyMage(new[] { 0.2f, 0.4f, 0f }));
+        Check("one mage piece is still melee", false, PathRules.MostlyMage(new[] { 0f, 0.4f, 0f }));
+        Check("no armor is melee", false, PathRules.MostlyMage(new float[0]));
         Check("big gain beats a small cheap upgrade", "bronzeHelm",
             string.Join(",", PathRules.KeyArmor(new[]
             {

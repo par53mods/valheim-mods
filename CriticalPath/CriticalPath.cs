@@ -13,7 +13,7 @@ namespace CriticalPath
 {
     // Shows what to make next on the inventory screen, worked out from what this
     // character has discovered, so a character mid-game starts in the right place.
-    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.9")]
+    [BepInPlugin("com.parallel53.criticalpath", "CriticalPath", "0.1.10")]
     public class CriticalPathPlugin : BaseUnityPlugin
     {
         private const string BuiltKey = "parallel53.criticalpath.built";
@@ -69,30 +69,31 @@ namespace CriticalPath
             new Gate("BombDynamite", "GoldOre", "Blow up gold veins in the Deep North", "Fader")
         };
 
-        // In order. Armor is the total worn that is enough to take the boss on, set
-        // so one tier of base-level gear will do rather than a fully upgraded set.
+        // In order. Armor is the total worn that is enough to take the boss on: the
+        // base set made in the boss's biome, which matches the set before it fully
+        // upgraded. MageArmor is the same for the mage sets, for someone who wears them.
         private static readonly Boss[] Bosses =
         {
-            new Boss("Eikthyr", 6f, "Offer 2 deer trophies at the altar. Parry his headbutts to stagger him.",
+            new Boss("Eikthyr", 12f, "Offer 2 deer trophies at the altar. Parry his headbutts to stagger him.",
                 NoResistance, ShieldUse.Parry,
                 new Need("TrophyDeer", 2, "Hunt deer in the Meadows"))
             {
                 Find = "Read the Vegvisir stone in the Meadows to mark his altar."
             },
-            new Boss("gd_king", 18f, "Offer 3 ancient seeds. Kite him with the bow from behind pillars.",
+            new Boss("gd_king", 24f, "Offer 3 ancient seeds. Kite him with the bow from behind pillars.",
                 NoResistance, ShieldUse.None,
                 new Need("AncientSeed", 3, "Destroy greydwarf nests in the Black Forest"))
             {
                 Arrows = 100,
                 Find = "Read a Vegvisir in a Black Forest burial chamber to mark his altar."
             },
-            new Boss("Bonemass", 30f, "Offer 10 withered bones. Parry to stagger him and bring blunt weapons.",
+            new Boss("Bonemass", 42f, "Offer 10 withered bones. Parry to stagger him and bring blunt weapons.",
                 HitData.DamageType.Poison, ShieldUse.Parry,
                 new Need("WitheredBone", 10, "Search Sunken Crypts in the Swamp"))
             {
                 Find = "Read a Vegvisir in a Swamp Sunken Crypt to mark his altar."
             },
-            new Boss("Dragon", 44f, "Offer 3 dragon eggs. Dodge her breath behind boulders.",
+            new Boss("Dragon", 60f, "Offer 3 dragon eggs. Dodge her breath behind boulders.",
                 HitData.DamageType.Frost, ShieldUse.None,
                 new Need("DragonEgg", 3, "Carry eggs one at a time from dragon nests in the Mountains"))
             {
@@ -101,31 +102,34 @@ namespace CriticalPath
                 Find = "Read a Vegvisir in the Mountains to mark her altar.",
                 ResistAgainst = "the Mountains' cold and Moder's frost breath"
             },
-            new Boss("GoblinKing", 60f, "Offer 5 fuling totems. Sprint behind his stone pillars.",
+            new Boss("GoblinKing", 78f, "Offer 5 fuling totems. Sprint behind his stone pillars.",
                 HitData.DamageType.Fire, ShieldUse.None,
                 new Need("GoblinTotem", 5, "Take totems from fuling villages in the Plains"))
             {
                 Find = "Read a Vegvisir in a Plains fuling village to mark his altar."
             },
-            new Boss("SeekerQueen", 82f, "Open the sealed door with the Sealbreaker. Dodge rather than block.",
+            new Boss("SeekerQueen", 96f, "Open the sealed door with the Sealbreaker. Dodge rather than block.",
                 NoResistance, ShieldUse.None,
                 new Need("DvergrKey", 1, ""),
                 new Need("CapeFeather", 1, ""),
                 new Need("Demister", 1, ""))
             {
-                Find = "Read the Vegvisir in a Mistlands infested mine to mark her lair."
+                Find = "Read the Vegvisir in a Mistlands infested mine to mark her lair.",
+                MageArmor = 48f
             },
-            new Boss("Fader", 94f, "Place 3 bells at the altar.", HitData.DamageType.Fire, ShieldUse.Strongest,
+            new Boss("Fader", 114f, "Place 3 bells at the altar.", HitData.DamageType.Fire, ShieldUse.Strongest,
                 new Need("Bell", 3, ""))
             {
-                Find = "Read a Vegvisir in an Ashlands fortress to mark its altar."
+                Find = "Read a Vegvisir in an Ashlands fortress to mark its altar.",
+                MageArmor = 57f
             },
-            new Boss("FrozenKing", 108f, "Offer 3 hateful blood at the altar. Earlier bosses join the fight partway through.",
+            new Boss("FrozenKing", 132f, "Offer 3 hateful blood at the altar. Earlier bosses join the fight partway through.",
                 HitData.DamageType.Frost, ShieldUse.None,
                 new Need("HatefulBlood", 3, "Destroy Black Ice cores in the Deep North"))
             {
                 Find = "Read a Vegvisir in the Deep North to mark its altar.",
-                ResistAgainst = "its frost attacks"
+                ResistAgainst = "its frost attacks",
+                MageArmor = 66f
             }
         };
 
@@ -364,7 +368,8 @@ namespace CriticalPath
 
         // Bosses the game has that the list above doesn't name, such as Kall
         // Fimbulbringer of the Deep North, come last with this armor each.
-        private const float LaterBossArmor = 96f;
+        private const float LaterBossArmor = 132f;
+        private const float LaterBossMageArmor = 66f;
         private const string LaterBossHint = "Its altar says what to offer.";
 
         private static readonly ItemDrop.ItemData.ItemType[] ArmorSlots =
@@ -440,6 +445,9 @@ namespace CriticalPath
 
             // What the resistance protects against, when more than the fight itself.
             public string ResistAgainst = "";
+
+            // Armor that is enough in mage armor, when a mage set exists by then.
+            public float MageArmor;
 
             public Boss(string prefab, float targetArmor, string hint, HitData.DamageType resist, ShieldUse shield,
                 params Need[] bring)
@@ -557,6 +565,9 @@ namespace CriticalPath
             public string Hint;
             public float Armor;
             public float TargetArmor;
+
+            // Wears mostly mage armor, so armor suggestions keep to mage pieces.
+            public bool Mage;
 
             // What to bring that isn't on hand yet.
             public List<Shortfall> Missing;
@@ -945,7 +956,8 @@ namespace CriticalPath
                         Weak = DamageKinds.Where(type => IsWeakness(character.m_damageModifiers.GetModifier(type))).ToList(),
                         Have = boss.Resist == NoResistance ? 0 : Strongest(player, stock, boss.Resist),
                         Armor = player.GetBodyArmor(),
-                        TargetArmor = boss.TargetArmor,
+                        Mage = WearsMageArmor(player) && boss.MageArmor > 0f,
+                        TargetArmor = WearsMageArmor(player) && boss.MageArmor > 0f ? boss.MageArmor : boss.TargetArmor,
                         Located = Located(character.m_name),
                         Find = boss.Find
                     };
@@ -974,7 +986,10 @@ namespace CriticalPath
                             Localized(prefab.GetComponent<Character>().m_name) + ")");
                     }
 
-                    return new Boss(prefab.name, LaterBossArmor, LaterBossHint, NoResistance, ShieldUse.None);
+                    return new Boss(prefab.name, LaterBossArmor, LaterBossHint, NoResistance, ShieldUse.None)
+                    {
+                        MageArmor = LaterBossMageArmor
+                    };
                 });
             return Bosses.Concat(later);
         }
@@ -1124,7 +1139,7 @@ namespace CriticalPath
             suggestions.AddRange(MeadGoals(plan, stock));
             if (goal != null && !goal.Ready)
             {
-                suggestions.AddRange(ArmorGoals(player, plan, goal.TargetArmor - goal.Armor));
+                suggestions.AddRange(ArmorGoals(player, plan, goal.TargetArmor - goal.Armor, goal.Mage));
                 suggestions.AddRange(BringGoals(plan, stock, goal));
                 if (resist != null)
                 {
@@ -1797,9 +1812,18 @@ namespace CriticalPath
             return null;
         }
 
+        // Someone in mostly mage armor fights with magic; otherwise melee is assumed.
+        private static bool WearsMageArmor(Player player)
+        {
+            return PathRules.MostlyMage(player.GetInventory().GetEquippedItems()
+                .Where(item => ArmorSlots.Contains(item.m_shared.m_itemType))
+                .Select(item => item.m_shared.m_eitrRegenModifier));
+        }
+
         // New pieces and upgrades to what is worn, compared slot by slot, keeping
-        // only what it takes to reach the boss's armor.
-        private static IEnumerable<Suggestion> ArmorGoals(Player player, Plan plan, float needed)
+        // only what it takes to reach the boss's armor. Mage pieces for a mage,
+        // the rest for everyone else.
+        private static IEnumerable<Suggestion> ArmorGoals(Player player, Plan plan, float needed, bool mage)
         {
             List<ItemDrop.ItemData> worn = player.GetInventory().GetEquippedItems();
             List<ArmorOption> options = new List<ArmorOption>();
@@ -1812,7 +1836,9 @@ namespace CriticalPath
                 float armor = current != null ? current.GetArmor() : 0f;
 
                 foreach (Recipe recipe in plan.Recipes.Values.Where(r =>
-                    r.m_item.m_itemData.m_shared.m_itemType == type && !player.IsMaterialKnown(ItemName(r))))
+                    r.m_item.m_itemData.m_shared.m_itemType == type &&
+                    r.m_item.m_itemData.m_shared.m_eitrRegenModifier > 0f == mage &&
+                    !player.IsMaterialKnown(ItemName(r))))
                 {
                     string id = ItemName(recipe);
                     float gain = recipe.m_item.m_itemData.m_shared.m_armor - armor;

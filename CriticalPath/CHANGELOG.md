@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.10 (2026-11-26)
+
+- Boss armor targets are higher: the base set made in that boss's biome, or the set before it fully upgraded. For example, 42 for Bonemass (iron) and 96 for the Queen (carapace).
+- If you wear mostly mage armor, the Queen, Fader and Fimbulbringer use lower mage armor targets, and armor suggestions stick to mage pieces. Otherwise they leave mage armor out.
+
 ## 0.1.9 (2026-11-24)
 
 - Fix: a station upgrade the game hadn't shown you yet was never suggested, such as the Black forge vise, which only shows once you have a mechanical spring. It now suggests the first thing to make for it, such as the mechanical spring at the artisan table, or the Grinding wheel's sharpening stone at the stonecutter. When it waits on a material you haven't found yet, such as chain for the Forge bellows, it says where to look, from your current biome's list or an earlier one's.
